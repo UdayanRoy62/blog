@@ -329,7 +329,7 @@ The chart shows inflation-adjusted wages in the first 12 quarters of each presid
 
 # Poverty
 
-*Data*: [Historical Poverty Tables: People and Families - 1959 to 2023](https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html) [Table 2](https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov2.xlsx) and [Table 3](https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov3.xlsx)
+*Data*: [Historical Poverty Tables: People and Families - 1959 to 2023](https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html) [Table 2](https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov2.xlsx) and [Table 3](https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov3.xlsx). Extracted data in [CSV file](poverty_rates.csv).
 
 ## Overall Poverty
 
