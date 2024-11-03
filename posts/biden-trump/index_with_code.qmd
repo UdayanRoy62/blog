@@ -8,7 +8,7 @@ This is a brief comparison of the U.S. economy during the first three years of t
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 library(tidyverse)
 library(fredr)
@@ -114,7 +114,7 @@ Here I am looking at:
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Real_Net_Worth, colour = POTUS)) +
@@ -143,7 +143,7 @@ This turns out to be a recurring theme. My decision to focus on the first three 
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = GDP, colour = POTUS)) +
@@ -170,7 +170,7 @@ Note that the chart shows real GDP in the first 12 quarters of each presidential
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = GDPPC, colour = POTUS)) +
@@ -197,7 +197,7 @@ The chart shows real GDP per capita in the first 12 quarters of each presidentia
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = CONSPC, colour = POTUS)) +
@@ -224,7 +224,7 @@ The chart shows real personal consumption expenditures per capita in the first 1
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = UNRATE, colour = POTUS)) +
   geom_line() +
@@ -248,7 +248,7 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = UNRATE, colour
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = CPI, colour = POTUS)) +
   geom_line() +
@@ -282,7 +282,7 @@ All in all, Biden gets blamed for the inflation, but by a moronic media and an i
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Jobs, colour = POTUS)) +
   geom_line() +
@@ -308,7 +308,7 @@ The chart shows total non-farm employment in the first 12 quarters of each presi
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Weekly_Wage, colour = POTUS)) +
   geom_line() +
@@ -336,7 +336,7 @@ The chart shows inflation-adjusted wages in the first 12 quarters of each presid
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 poverty <- read_csv("poverty_rates.csv") |>
   filter(Year >= 2017)|>
@@ -370,7 +370,7 @@ ggplot(data = poverty, mapping = aes(x = year_of_term, y = Poverty, color = POTU
 ```{r}
 #| message: false
 #| warning: false
-#| echo: false
+#| echo: true
 
 ggplot(data = poverty, mapping = aes(x = year_of_term, y = Child_Poverty, color = POTUS)) +
   geom_line() +
@@ -395,4 +395,5 @@ In most cases -- that is for most variables -- the U.S. economy did better under
 
 ### R Code
 
-The R code for data downloads, all calculations, and graphs are available [here](index_with_code.html).
+The R code for data downloads, all calculations, and graphs
+are available [here](index_with_code.html). 

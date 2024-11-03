@@ -7,6 +7,48 @@
     "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
   },
   {
+    "objectID": "posts/biden-trump/index_with_code.html",
+    "href": "posts/biden-trump/index_with_code.html",
+    "title": "Trump and Biden: Their First Three Years",
+    "section": "",
+    "text": "This is a brief comparison of the U.S. economy during the first three years of the Trump and Biden terms. Trump’s fourth year was dominated by a once-in-a-century pandemic, and Biden’s fourth year is ongoing.\nlibrary(tidyverse)\nlibrary(fredr)\n\n# Downloading and preparing the data\n\nmy_q_data_series_id &lt;- c(\"BOGZ1FL192090005Q\", \"GDPC1\", \"A939RX0Q048SBEA\", \"UNRATE\", \"CPIAUCSL\", \"PAYEMS\", \"LES1252881600Q\", \"A794RX0Q048SBEA\")\n\nparams &lt;- list(\n  series_id = my_q_data_series_id,\n  frequency = c(\"q\",\"q\", \"q\", \"q\", \"q\", \"q\", \"q\", \"q\")\n)\n\nmy_q_data &lt;- purrr::pmap_dfr(\n  .l = params,\n  .f = ~ fredr(series_id = .x, frequency = .y)\n) |&gt;\n  select(1:3) \n  \nstart_date_obama_I &lt;- as.Date(\"2009-01-01\")\nstart_date_obama_II &lt;- as.Date(\"2013-01-01\")\nstart_date_trump &lt;- as.Date(\"2017-01-01\")\nstart_date_biden &lt;- as.Date(\"2021-01-01\")\n\nmy_q_data_2 &lt;- my_q_data |&gt;\n  pivot_wider(names_from = series_id, values_from = value)  |&gt;\n  mutate(Net_Worth_Adjusted = 100*BOGZ1FL192090005Q/CPIAUCSL) |&gt;\n  filter(date &gt;= start_date_obama_I) |&gt;\n  mutate(quarter_of_term = case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 1 + floor((date - start_date_obama_I)/90),\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 1 + floor((date - start_date_obama_II)/90),\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 1 + floor((date - start_date_trump)/90),\n    date &gt;= start_date_biden ~ 1 + floor((date - start_date_biden)/90)\n  )) |&gt;\n  mutate(POTUS = case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ \"Obama I\",\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ \"Obama II\",\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ \"Trump\",\n    date &gt;= start_date_biden ~ \"Biden\"\n  )) |&gt;\n  mutate(Real_Net_Worth = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_obama_I])/Net_Worth_Adjusted[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_obama_II])/Net_Worth_Adjusted[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_trump])/Net_Worth_Adjusted[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_biden])/Net_Worth_Adjusted[date == start_date_biden]\n  )) |&gt;\n  mutate(GDP = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(GDPC1 - GDPC1[date == start_date_obama_I])/GDPC1[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(GDPC1 - GDPC1[date == start_date_obama_II])/GDPC1[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(GDPC1 - GDPC1[date == start_date_trump])/GDPC1[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(GDPC1 - GDPC1[date == start_date_biden])/GDPC1[date == start_date_biden]\n  )) |&gt;\n  mutate(GDPPC = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(A939RX0Q048SBEA - A939RX0Q048SBEA[date == start_date_obama_I])/A939RX0Q048SBEA[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(A939RX0Q048SBEA - A939RX0Q048SBEA[date == start_date_obama_II])/A939RX0Q048SBEA[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(A939RX0Q048SBEA - A939RX0Q048SBEA[date == start_date_trump])/A939RX0Q048SBEA[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(A939RX0Q048SBEA - A939RX0Q048SBEA[date == start_date_biden])/A939RX0Q048SBEA[date == start_date_biden]\n  ))  |&gt;\n  mutate(CONSPC = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(A794RX0Q048SBEA - A794RX0Q048SBEA[date == start_date_obama_I])/A794RX0Q048SBEA[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(A794RX0Q048SBEA - A794RX0Q048SBEA[date == start_date_obama_II])/A794RX0Q048SBEA[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(A794RX0Q048SBEA - A794RX0Q048SBEA[date == start_date_trump])/A794RX0Q048SBEA[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(A794RX0Q048SBEA - A794RX0Q048SBEA[date == start_date_biden])/A794RX0Q048SBEA[date == start_date_biden]\n  )) |&gt;\n  mutate(CPI = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_obama_I])/CPIAUCSL[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_obama_II])/CPIAUCSL[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_trump])/CPIAUCSL[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_biden])/CPIAUCSL[date == start_date_biden]\n  )) |&gt;\n  mutate(Jobs = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(PAYEMS - PAYEMS[date == start_date_obama_I])/PAYEMS[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(PAYEMS - PAYEMS[date == start_date_obama_II])/PAYEMS[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(PAYEMS - PAYEMS[date == start_date_trump])/PAYEMS[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(PAYEMS - PAYEMS[date == start_date_biden])/PAYEMS[date == start_date_biden]\n  )) |&gt;\n  mutate(Weekly_Wage = 100 + case_when(\n    (date &gt;= start_date_obama_I) & (date &lt; start_date_obama_II) ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_obama_I])/LES1252881600Q[date == start_date_obama_I],\n    (date &gt;= start_date_obama_II) & (date &lt; start_date_trump) ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_obama_II])/LES1252881600Q[date == start_date_obama_II],\n    (date &gt;= start_date_trump) & (date &lt; start_date_biden) ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_trump])/LES1252881600Q[date == start_date_trump],\n    date &gt;= start_date_biden ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_biden])/LES1252881600Q[date == start_date_biden]\n  )) |&gt;\n  filter(date &gt;= start_date_trump & quarter_of_term &lt;= 12)\nHere I am looking at:"
+  },
+  {
+    "objectID": "posts/biden-trump/index_with_code.html#overall-poverty",
+    "href": "posts/biden-trump/index_with_code.html#overall-poverty",
+    "title": "Trump and Biden: Their First Three Years",
+    "section": "Overall Poverty",
+    "text": "Overall Poverty\n\npoverty &lt;- read_csv(\"poverty_rates.csv\") |&gt;\n  filter(Year &gt;= 2017)|&gt;\n  mutate(year_of_term = case_when(\n    Year &lt; 2021 ~ 1 + Year - 2017,\n    Year &gt;= 2021 ~ 1 + Year - 2021\n  )) |&gt;\n  mutate(POTUS = case_when(\n    Year &lt; 2021 ~ \"Trump\",\n    Year &gt;= 2021 ~ \"Biden\"\n  )) |&gt;\n  filter(year_of_term &lt; 4)\n\nggplot(data = poverty, mapping = aes(x = year_of_term, y = Poverty, color = POTUS)) +\n  geom_line() +\n  labs(\n    title = \"Comparison of the first three years of the Trump and Biden terms\",\n    subtitle = \"Percent in Poverty\",\n    x = \"Year of Term\", y = \"Percent\",\n    color = \"President\", caption = \"Source: https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html\"\n  ) +\n  theme_minimal() +\n  scale_x_continuous(breaks = 1:3)\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic."
+  },
+  {
+    "objectID": "posts/biden-trump/index_with_code.html#child-poverty",
+    "href": "posts/biden-trump/index_with_code.html#child-poverty",
+    "title": "Trump and Biden: Their First Three Years",
+    "section": "Child Poverty",
+    "text": "Child Poverty\n\nggplot(data = poverty, mapping = aes(x = year_of_term, y = Child_Poverty, color = POTUS)) +\n  geom_line() +\n  labs(\n    title = \"Comparison of the first three years of the Trump and Biden terms\",\n    subtitle = \"Percent in Poverty, Children\",\n    x = \"Year of Term\", y = \"Percent\",\n    color = \"President\", caption = \"Source: https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html\"\n  ) +\n  theme_minimal() +\n  scale_x_continuous(breaks = 1:3)\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic.\nAlthough I have used the Official Poverty Rate, I prefer the Supplemental Poverty Rate. I will update to that variable if I can find the data."
+  },
+  {
+    "objectID": "posts/biden-trump/index-old.html",
+    "href": "posts/biden-trump/index-old.html",
+    "title": "Comparing Trump and Biden: Their First Three Years",
+    "section": "",
+    "text": "Will be adding changes soon."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this blog"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Udayan Roy: Blog",
+    "section": "",
+    "text": "Trump and Biden: Their First Three Years\n\n\n\n\n\n\n\n\n\n\n\nUdayan Roy\n\n\n\n\n\n\n\n\n\n\n\n\nTrump and Biden: Their First Three Years\n\n\n\n\n\n\n\n\n\n\n\nUdayan Roy\n\n\n\n\n\n\n\n\n\n\n\n\nComparing Trump and Biden: Their First Three Years\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nNov 2, 2024\n\n\nUdayan Roy\n\n\n\n\n\n\n\n\n\n\n\n\nPost With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nNov 2, 2024\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nOct 30, 2024\n\n\nTristan O’Malley\n\n\n\n\n\n\nNo matching items"
+  },
+  {
     "objectID": "posts/biden-trump/index.html",
     "href": "posts/biden-trump/index.html",
     "title": "Trump and Biden: Their First Three Years",
@@ -26,27 +68,6 @@
     "title": "Trump and Biden: Their First Three Years",
     "section": "Child Poverty",
     "text": "Child Poverty\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic.\nAlthough I have used the Official Poverty Rate, I prefer the Supplemental Poverty Rate. I will update to that variable if I can find the data."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Udayan Roy: Blog",
-    "section": "",
-    "text": "Trump and Biden: Their First Three Years\n\n\n\n\n\n\n\n\n\n\n\nUdayan Roy\n\n\n\n\n\n\n\n\n\n\n\n\nComparing Trump and Biden: Their First Three Years\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nNov 2, 2024\n\n\nUdayan Roy\n\n\n\n\n\n\n\n\n\n\n\n\nPost With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nNov 2, 2024\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nOct 30, 2024\n\n\nTristan O’Malley\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this blog"
-  },
-  {
-    "objectID": "posts/biden-trump/index-old.html",
-    "href": "posts/biden-trump/index-old.html",
-    "title": "Comparing Trump and Biden: Their First Three Years",
-    "section": "",
-    "text": "Will be adding changes soon."
   },
   {
     "objectID": "posts/post-with-code/index.html",
