@@ -1,9 +1,309 @@
 ---
-title: "Comparing Trump and Biden: Their First Three Years"
+title: "Trump and Biden: Their First Three Years"
 author: "Udayan Roy"
-date: "2024-11-02"
-categories: [news, code, analysis]
-image: "image.jpg"
 ---
 
-Will be adding changes soon.
+This is a brief comparison of the U.S. economy during the first three years of the Trump and Biden terms. (Trump's fourth year was dominated by a once-in-a-century pandemic, and Biden's fourth year is ongoing.)
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+library(tidyverse)
+library(fredr)
+
+# Downloading and preparing the data
+
+my_q_data_series_id <- c("BOGZ1FL192090005Q", "GDPC1", "UNRATE", "CPIAUCSL", "PAYEMS", "LES1252881600Q")
+
+params <- list(
+  series_id = my_q_data_series_id,
+  frequency = c("q", "q", "q", "q", "q", "q")
+)
+
+my_q_data <- purrr::pmap_dfr(
+  .l = params,
+  .f = ~ fredr(series_id = .x, frequency = .y)
+) |>
+  select(1:3) 
+  
+start_date_obama_I <- as.Date("2009-01-01")
+start_date_obama_II <- as.Date("2013-01-01")
+start_date_trump <- as.Date("2017-01-01")
+start_date_biden <- as.Date("2021-01-01")
+
+my_q_data_2 <- my_q_data |>
+  pivot_wider(names_from = series_id, values_from = value)  |>
+  mutate(Net_Worth_Adjusted = 100*BOGZ1FL192090005Q/CPIAUCSL) |>
+  filter(date >= start_date_obama_I) |>
+  mutate(quarter_of_term = case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ 1 + floor((date - start_date_obama_I)/90),
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ 1 + floor((date - start_date_obama_II)/90),
+    (date >= start_date_trump) & (date < start_date_biden) ~ 1 + floor((date - start_date_trump)/90),
+    date >= start_date_biden ~ 1 + floor((date - start_date_biden)/90)
+  )) |>
+  mutate(POTUS = case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ "Obama I",
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ "Obama II",
+    (date >= start_date_trump) & (date < start_date_biden) ~ "Trump",
+    date >= start_date_biden ~ "Biden"
+  )) |>
+  mutate(Real_Net_Worth = 100 + case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_obama_I])/Net_Worth_Adjusted[date == start_date_obama_I],
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_obama_II])/Net_Worth_Adjusted[date == start_date_obama_II],
+    (date >= start_date_trump) & (date < start_date_biden) ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_trump])/Net_Worth_Adjusted[date == start_date_trump],
+    date >= start_date_biden ~ 100*(Net_Worth_Adjusted - Net_Worth_Adjusted[date == start_date_biden])/Net_Worth_Adjusted[date == start_date_biden]
+  )) |>
+  mutate(GDP = 100 + case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ 100*(GDPC1 - GDPC1[date == start_date_obama_I])/GDPC1[date == start_date_obama_I],
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ 100*(GDPC1 - GDPC1[date == start_date_obama_II])/GDPC1[date == start_date_obama_II],
+    (date >= start_date_trump) & (date < start_date_biden) ~ 100*(GDPC1 - GDPC1[date == start_date_trump])/GDPC1[date == start_date_trump],
+    date >= start_date_biden ~ 100*(GDPC1 - GDPC1[date == start_date_biden])/GDPC1[date == start_date_biden]
+  )) |>
+  mutate(CPI = 100 + case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_obama_I])/CPIAUCSL[date == start_date_obama_I],
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_obama_II])/CPIAUCSL[date == start_date_obama_II],
+    (date >= start_date_trump) & (date < start_date_biden) ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_trump])/CPIAUCSL[date == start_date_trump],
+    date >= start_date_biden ~ 100*(CPIAUCSL - CPIAUCSL[date == start_date_biden])/CPIAUCSL[date == start_date_biden]
+  )) |>
+  mutate(Jobs = 100 + case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ 100*(PAYEMS - PAYEMS[date == start_date_obama_I])/PAYEMS[date == start_date_obama_I],
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ 100*(PAYEMS - PAYEMS[date == start_date_obama_II])/PAYEMS[date == start_date_obama_II],
+    (date >= start_date_trump) & (date < start_date_biden) ~ 100*(PAYEMS - PAYEMS[date == start_date_trump])/PAYEMS[date == start_date_trump],
+    date >= start_date_biden ~ 100*(PAYEMS - PAYEMS[date == start_date_biden])/PAYEMS[date == start_date_biden]
+  )) |>
+  mutate(Weekly_Wage = 100 + case_when(
+    (date >= start_date_obama_I) & (date < start_date_obama_II) ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_obama_I])/LES1252881600Q[date == start_date_obama_I],
+    (date >= start_date_obama_II) & (date < start_date_trump) ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_obama_II])/LES1252881600Q[date == start_date_obama_II],
+    (date >= start_date_trump) & (date < start_date_biden) ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_trump])/LES1252881600Q[date == start_date_trump],
+    date >= start_date_biden ~ 100*(LES1252881600Q - LES1252881600Q[date == start_date_biden])/LES1252881600Q[date == start_date_biden]
+  )) |>
+  filter(date >= start_date_trump & quarter_of_term <= 12)
+```
+I will be looking at:
+
+*  [Real (that is, inflation-adjusted) Gross Domestic Product](https://fred.stlouisfed.org/series/GDPC1), 
+*  [Median usual weekly real earnings, of those employed full-time](https://fred.stlouisfed.org/series/LES1252881600Q), 
+*  [Unemployment Rate](https://fred.stlouisfed.org/series/UNRATE)
+*  [Jobs Added](https://fred.stlouisfed.org/series/PAYEMS)
+*  [Net Worth of U.S. Households](https://fred.stlouisfed.org/series/BOGZ1FL192090005Q) adjusted for inflation; see below
+*  [Inflation](https://fred.stlouisfed.org/series/CPIAUCSL)
+*  Poverty
+*  Child Poverty
+
+# Total Net Worth, Inflation-Adjusted
+
+*Data*: [Net Worth](https://fred.stlouisfed.org/series/BOGZ1FL192090005Q) and [Consumer Price Index](https://fred.stlouisfed.org/series/CPIAUCSL). To adjust net worth for inflation, I divided net worth by the CPI and multiplied the result by 100. This yields net worth in constant 1983 dollars, 1983 being the base year of the CPI data.
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+
+ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Real_Net_Worth, colour = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Total Net Worth, Inflation-Adjusted",
+    x = "Quarter of Term", y = "Percent",
+    color = "President", caption = "FRED: https://fred.stlouisfed.org/series/BOGZ1FL192090005Q"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+```
+
+*Comment*: This is a huge plus for Trump. Trump's massive corporate tax cut meant much bigger payoffs for shareholders. As the price of a share depends those payoffs, share prices rose sharply. And, remember, I am leaving out Trump's pandemic year. The depressing effect of the pandemic on asset prices probably hurt Biden very badly.
+
+# Gross Domestic Product, Inflation-Adjusted
+
+*Data*: [GDP](https://fred.stlouisfed.org/series/GDPC1). 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+
+ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = GDP, colour = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Gross Domestic Product, Inflation-Adjusted",
+    x = "Quarter of Term", y = "Percent",
+    color = "President", caption = "FRED: https://fred.stlouisfed.org/series/GDPC1"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+```
+
+*Comment*: This is a win for Biden. The percentage increase in GDP, which is the best measure of the sheer economic vigor of a country, from the start of a term was higher for Biden for every time interval.
+
+# Unemployment
+
+*Data*: [GDP](https://fred.stlouisfed.org/series/UNRATE). 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = UNRATE, colour = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Unemployment Rate",
+    x = "Quarter of Term", y = "Percent",
+    color = "President", caption = "FRED: https://fred.stlouisfed.org/series/UNRATE"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+```
+
+*Comment*: I call this a tie. As in the case of inflation-adjusted net worth, Trump gets the benefit of a pre-pandemic era and Biden gets punished by the lingering high unemployment of the pandemic period. The unemployment rate "goes up like a rocket and comes down like a feather."
+
+# Prices
+
+*Data*: [GDP](https://fred.stlouisfed.org/series/CPIAUCSL). 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = CPI, colour = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Consumer Price Index",
+    x = "Quarter of Term", y = "Percent",
+    color = "President", caption = "FRED: https://fred.stlouisfed.org/series/CPIAUCSL"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+```
+
+*Comment*: Big defeat for Biden. But blaming Biden for the higher inflation during his term is idiotic. 
+
+Virtually every advanced country went through similar inflation at the same time, indicating the effect of a global phenomenon. The simultaneous reopening of the world's economies after the pandemic overwhelmed the global supply chains. The war in Ukraine disrupted global grain and oil markets. 
+
+Large expenditures by governments may have contributed a bit to the inflation, but it would have been moral malpractice for governments to not help people suffering from a once-a-century pandemic. Moreover, in most countries, the inflation faded without any increase in unemployment (the so-called "soft landing"). If the inflation went away without a big decrease in aggregate demand being required, it may be that the inflation was not caused by an increase in aggregate demand in the first place.
+
+Finally, inflation in the U.S. is traditionally the responsibility of the Federal Reserve, the central bank. Their experts -- whose main job is that of keeping an eye on inflation -- did not see the inflation coming. Consequently, they did not attack inflation in a timely manner. 
+
+All in all, Biden gets blamed for the inflation, but by a moronic media and an idiotic public who have no understanding of the issues and have no understanding of the availability of inflation-adjusted data on things like unemployment and GDP.
+
+# Jobs Added
+
+*Data*: [GDP](https://fred.stlouisfed.org/series/PAYEMS). 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Jobs, colour = POTUS)) +
+  geom_line() +
+    labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Total Nonfarm Payroll, as a percentage of the value of a term's initial value",
+    x = "Quarter of Term", y = "Percent",
+    color = "President", caption = "FRED: https://fred.stlouisfed.org/series/PAYEMS"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+```
+
+*Comment*: This is a huge win for Biden. A record number of new jobs were added and the numbers exceeded pre-pandemic projections. As a result, the labor market remained consistently tight.
+
+# Wages, Inflation-Adjusted
+
+*Data*: [GDP](https://fred.stlouisfed.org/series/LES1252881600Q). 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Weekly_Wage, colour = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Median usual weekly real earnings of those employed full-time",
+    x = "Quarter of Term", y = "Percent",
+    color = "President", caption = "Source: https://fred.stlouisfed.org/series/LES1252881600Q"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+```
+
+*Comment*: This is a big win for Trump. Inflation-adjusted wages rose faster during the pre-pandemic phase of Trump's term. However, wages kept growing during Biden's term, although at a slower pace.
+
+# Poverty
+
+*Data*: [Historical Poverty Tables: People and Families - 1959 to 2023](https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html) [Table 2](https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov2.xlsx) and [Table 3](https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov3.xlsx)
+
+## Overall Poverty
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+poverty <- read_csv("poverty_rates.csv") |>
+  filter(Year >= 2017)|>
+  mutate(year_of_term = case_when(
+    Year < 2021 ~ 1 + Year - 2017,
+    Year >= 2021 ~ 1 + Year - 2021
+  )) |>
+  mutate(POTUS = case_when(
+    Year < 2021 ~ "Trump",
+    Year >= 2021 ~ "Biden"
+  )) |>
+  filter(year_of_term < 4)
+
+ggplot(data = poverty, mapping = aes(x = year_of_term, y = Poverty, color = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Percent in Poverty",
+    x = "Year of Term", y = "Percent",
+    color = "President", caption = "Source: https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:3)
+
+```
+
+*Comment*: This is a win for Biden, though Trump did better in his third year, before the pandemic.
+
+## Child Poverty
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+ggplot(data = poverty, mapping = aes(x = year_of_term, y = Child_Poverty, color = POTUS)) +
+  geom_line() +
+  labs(
+    title = "Comparison of the first three years of the Trump and Biden terms",
+    subtitle = "Percent in Poverty, Children",
+    x = "Year of Term", y = "Percent",
+    color = "President", caption = "Source: https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:3)
+
+```
+
+*Comment*: This is a win for Biden, though Trump did better in his third year, before the pandemic.
+
+Although I have used the Official Poverty Rate, I prefer the Supplemental Poverty Rate. I hope to update this soon.

@@ -1,0 +1,9 @@
+---
+title: "Comparing Trump and Biden: Their First Three Years"
+author: "Udayan Roy"
+date: "2024-11-02"
+categories: [news, code, analysis]
+image: "image.jpg"
+---
+
+Will be adding changes soon.
