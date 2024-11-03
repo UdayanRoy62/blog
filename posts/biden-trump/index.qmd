@@ -81,16 +81,17 @@ my_q_data_2 <- my_q_data |>
   )) |>
   filter(date >= start_date_trump & quarter_of_term <= 12)
 ```
+
 I will be looking at:
 
-*  [Real (that is, inflation-adjusted) Gross Domestic Product](https://fred.stlouisfed.org/series/GDPC1), 
-*  [Median usual weekly real earnings, of those employed full-time](https://fred.stlouisfed.org/series/LES1252881600Q), 
-*  [Unemployment Rate](https://fred.stlouisfed.org/series/UNRATE)
-*  [Jobs Added](https://fred.stlouisfed.org/series/PAYEMS)
-*  [Net Worth of U.S. Households](https://fred.stlouisfed.org/series/BOGZ1FL192090005Q) adjusted for inflation; see below
-*  [Inflation](https://fred.stlouisfed.org/series/CPIAUCSL)
-*  Poverty
-*  Child Poverty
+-   [Real (that is, inflation-adjusted) Gross Domestic Product](https://fred.stlouisfed.org/series/GDPC1),
+-   [Median usual weekly real earnings, of those employed full-time](https://fred.stlouisfed.org/series/LES1252881600Q),
+-   [Unemployment Rate](https://fred.stlouisfed.org/series/UNRATE)
+-   [Jobs Added](https://fred.stlouisfed.org/series/PAYEMS)
+-   [Net Worth of U.S. Households](https://fred.stlouisfed.org/series/BOGZ1FL192090005Q) adjusted for inflation; see below
+-   [Inflation](https://fred.stlouisfed.org/series/CPIAUCSL)
+-   Poverty
+-   Child Poverty
 
 # Total Net Worth, Inflation-Adjusted
 
@@ -108,18 +109,20 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Real_Net_Worth
     title = "Comparison of the first three years of the Trump and Biden terms",
     subtitle = "Total Net Worth, Inflation-Adjusted",
     x = "Quarter of Term", y = "Percent",
-    color = "President", caption = "FRED: https://fred.stlouisfed.org/series/BOGZ1FL192090005Q"
+    color = "President", caption = "Source: https://fred.stlouisfed.org/series/BOGZ1FL192090005Q"
   ) +
   theme_minimal() +
   scale_x_continuous(breaks = 1:12)
 
 ```
 
+Note that the chart shows real net worth in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.
+
 *Comment*: This is a huge plus for Trump. Trump's massive corporate tax cut meant much bigger payoffs for shareholders. As the price of a share depends those payoffs, share prices rose sharply. And, remember, I am leaving out Trump's pandemic year. The depressing effect of the pandemic on asset prices probably hurt Biden very badly.
 
 # Gross Domestic Product, Inflation-Adjusted
 
-*Data*: [GDP](https://fred.stlouisfed.org/series/GDPC1). 
+*Data*: [GDP](https://fred.stlouisfed.org/series/GDPC1).
 
 ```{r}
 #| message: false
@@ -140,11 +143,13 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = GDP, colour = 
 
 ```
 
+Note that the chart shows real GDP in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.
+
 *Comment*: This is a win for Biden. The percentage increase in GDP, which is the best measure of the sheer economic vigor of a country, from the start of a term was higher for Biden for every time interval.
 
 # Unemployment
 
-*Data*: [GDP](https://fred.stlouisfed.org/series/UNRATE). 
+*Data*: [GDP](https://fred.stlouisfed.org/series/UNRATE).
 
 ```{r}
 #| message: false
@@ -168,7 +173,7 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = UNRATE, colour
 
 # Prices
 
-*Data*: [GDP](https://fred.stlouisfed.org/series/CPIAUCSL). 
+*Data*: [GDP](https://fred.stlouisfed.org/series/CPIAUCSL).
 
 ```{r}
 #| message: false
@@ -188,19 +193,21 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = CPI, colour = 
 
 ```
 
-*Comment*: Big defeat for Biden. But blaming Biden for the higher inflation during his term is idiotic. 
+The chart shows the overall price level in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.
 
-Virtually every advanced country went through similar inflation at the same time, indicating the effect of a global phenomenon. The simultaneous reopening of the world's economies after the pandemic overwhelmed the global supply chains. The war in Ukraine disrupted global grain and oil markets. 
+*Comment*: Big defeat for Biden. But blaming Biden for the higher inflation during his term is idiotic.
+
+Virtually every advanced country went through similar inflation at the same time, indicating the effect of a global phenomenon. The simultaneous reopening of the world's economies after the pandemic overwhelmed the global supply chains. The war in Ukraine disrupted global grain and oil markets.
 
 Large expenditures by governments may have contributed a bit to the inflation, but it would have been moral malpractice for governments to not help people suffering from a once-a-century pandemic. Moreover, in most countries, the inflation faded without any increase in unemployment (the so-called "soft landing"). If the inflation went away without a big decrease in aggregate demand being required, it may be that the inflation was not caused by an increase in aggregate demand in the first place.
 
-Finally, inflation in the U.S. is traditionally the responsibility of the Federal Reserve, the central bank. Their experts -- whose main job is that of keeping an eye on inflation -- did not see the inflation coming. Consequently, they did not attack inflation in a timely manner. 
+Finally, inflation in the U.S. is traditionally the responsibility of the Federal Reserve, the central bank. Their experts -- whose main job is that of keeping an eye on inflation -- did not see the inflation coming. Consequently, they did not attack inflation in a timely manner.
 
 All in all, Biden gets blamed for the inflation, but by a moronic media and an idiotic public who have no understanding of the issues and have no understanding of the availability of inflation-adjusted data on things like unemployment and GDP.
 
 # Jobs Added
 
-*Data*: [GDP](https://fred.stlouisfed.org/series/PAYEMS). 
+*Data*: [GDP](https://fred.stlouisfed.org/series/PAYEMS).
 
 ```{r}
 #| message: false
@@ -220,11 +227,13 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Jobs, colour =
 
 ```
 
+The chart shows total non-farm employment in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.
+
 *Comment*: This is a huge win for Biden. A record number of new jobs were added and the numbers exceeded pre-pandemic projections. As a result, the labor market remained consistently tight.
 
 # Wages, Inflation-Adjusted
 
-*Data*: [GDP](https://fred.stlouisfed.org/series/LES1252881600Q). 
+*Data*: [GDP](https://fred.stlouisfed.org/series/LES1252881600Q).
 
 ```{r}
 #| message: false
@@ -243,6 +252,8 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Weekly_Wage, c
   scale_x_continuous(breaks = 1:12)
 
 ```
+
+The chart shows inflation-adjusted wages in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.
 
 *Comment*: This is a big win for Trump. Inflation-adjusted wages rose faster during the pre-pandemic phase of Trump's term. However, wages kept growing during Biden's term, although at a slower pace.
 
@@ -306,4 +317,4 @@ ggplot(data = poverty, mapping = aes(x = year_of_term, y = Child_Poverty, color 
 
 *Comment*: This is a win for Biden, though Trump did better in his third year, before the pandemic.
 
-Although I have used the Official Poverty Rate, I prefer the Supplemental Poverty Rate. I hope to update this soon.
+Although I have used the *Official Poverty Rate*, I prefer the *Supplemental Poverty Rate*. I will update to that variable if I can find the data.
