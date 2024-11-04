@@ -301,7 +301,7 @@ ggplot(data = my_q_data_2, mapping = aes(x = quarter_of_term, y = Jobs, colour =
 
 The chart shows total non-farm employment in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.
 
-*Comment*: This is a **huge win for Biden**. A record number of new jobs were added and the numbers exceeded pre-pandemic projections. 
+*Comment*: This is a **huge win for Biden**. A record number of new jobs were added and the numbers exceeded pre-pandemic projections.
 
 # Wages, Inflation-Adjusted
 
@@ -447,7 +447,6 @@ ggplot(data = poverty_SPM, mapping = aes(x = year_of_term, y = Child_Poverty_SPM
 ```
 
 *Comment*: This is a **win for Biden**, though Trump did better in his third year, before the pandemic. The big increase in Biden's second year was caused by the ending of the government's pandemic assistance programs.
-
 
 # Conclusion
 

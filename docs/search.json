@@ -70,13 +70,6 @@
     "text": "Child Poverty\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic."
   },
   {
-    "objectID": "posts/post-with-code/index.html",
-    "href": "posts/post-with-code/index.html",
-    "title": "Post With Code",
-    "section": "",
-    "text": "This is a post with executable code.\n\n1 + 1\n\n[1] 2"
-  },
-  {
     "objectID": "posts/biden-trump/index.html#overall-poverty-supplemental-poverty-measure",
     "href": "posts/biden-trump/index.html#overall-poverty-supplemental-poverty-measure",
     "title": "Trump and Biden: Their First Three Years",
@@ -89,5 +82,12 @@
     "title": "Trump and Biden: Their First Three Years",
     "section": "Child Poverty: Supplemental Poverty Measure",
     "text": "Child Poverty: Supplemental Poverty Measure\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic. The big increase in Biden’s second year was caused by the ending of the government’s pandemic assistance programs."
+  },
+  {
+    "objectID": "posts/post-with-code/index.html",
+    "href": "posts/post-with-code/index.html",
+    "title": "Post With Code",
+    "section": "",
+    "text": "This is a post with executable code.\n\n1 + 1\n\n[1] 2"
   }
 ]
