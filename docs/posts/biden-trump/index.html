@@ -158,9 +158,9 @@ ul.task-list li input[type="checkbox"] {
 <li>Poverty</li>
 <li>Child Poverty</li>
 </ul>
-<section id="total-net-worth-inflation-adjusted" class="level1">
-<h1>Total Net Worth, Inflation-Adjusted</h1>
-<p><em>Data</em>: <a href="https://fred.stlouisfed.org/series/BOGZ1FL192090005Q">Net Worth</a> and <a href="https://fred.stlouisfed.org/series/CPIAUCSL">Consumer Price Index</a>. To adjust net worth for inflation, I divided net worth by the CPI and multiplied the result by 100. This yields net worth in constant 1983 dollars, 1983 being the base year of the CPI data.</p>
+<section id="gross-domestic-product-inflation-adjusted" class="level1">
+<h1>Gross Domestic Product, Inflation-Adjusted</h1>
+<p><em>Data</em>: <a href="https://fred.stlouisfed.org/series/GDPC1">GDP</a>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -170,24 +170,9 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>The chart shows real net worth in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
-<p><em>Comment</em>: This is a <strong>huge win for Trump</strong>. Trump’s massive corporate tax cut meant much bigger payoffs for shareholders. As the price of a share depends those payoffs, share prices rose sharply. And, remember, I am leaving out Trump’s pandemic year. The depressing effect of the pandemic on asset prices probably hurt asset prices during Biden’s term.</p>
-<p>This turns out to be a recurring theme. My decision to focus on the first three years of each term gives a big advantage to Trump and hamstrings Biden. The first three years of Trump were (obviously) unaffected by the pandemic, whereas the U.S. economy struggled to recover from the pandemic during the first three years of Biden.</p>
-</section>
-<section id="gross-domestic-product-inflation-adjusted" class="level1">
-<h1>Gross Domestic Product, Inflation-Adjusted</h1>
-<p><em>Data</em>: <a href="https://fred.stlouisfed.org/series/GDPC1">GDP</a>.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Note that the chart shows real GDP in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
-<p><em>Comment</em>: This is a <strong>win for Biden</strong>. The percentage increase in GDP, which is the best measure of the sheer economic vigor of a country, from the start of a term was higher for Biden for every time interval.</p>
+<p>The chart shows inflation-adjusted (or, “real”) GDP in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
+<p><em>Comment</em>: This is a <strong>win for Biden</strong>. Real GDP is the total inflation-adjusted income of the residents of a country. It is the best one-number measure of the sheer economic vigor of a country. The percentage increase in real GDP was higher at every point of Biden’s term compared to the same point of Trump’s term.</p>
+<p>On inflation-adjustment, let’s take a simple example: if income increases 10 percent and prices rise 8 percent, then your income after <em>adjustment for inflation</em> increased roughly 2 percent.</p>
 </section>
 <section id="gross-domestic-product-inflation-adjusted-per-capita" class="level1">
 <h1>Gross Domestic Product, Inflation-Adjusted, Per Capita</h1>
@@ -196,7 +181,7 @@ ul.task-list li input[type="checkbox"] {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -211,17 +196,31 @@ ul.task-list li input[type="checkbox"] {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>The chart shows real personal consumption expenditures per capita in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
-<p><em>Comment</em>: This too is again a <strong>win for Biden</strong>, who led Trump all the way. Critics who criticize Biden for high inflation need to explain why – even after correcting for inflation – people were buying so much stuff.</p>
+<p><em>Comment</em>: This is again a <strong>win for Biden</strong>, who led Trump all the way. Critics who criticize Biden for high inflation need to explain why – even after correcting for inflation – people were buying so much stuff. Prices rose rapidly during Biden’s term, as shown below. But personal consumption expenditures rose even more. And inflation-adjusted consumer spending rose faster under Biden than under Trump.</p>
 </section>
 <section id="unemployment" class="level1">
 <h1>Unemployment</h1>
 <p><em>Data</em>: <a href="https://fred.stlouisfed.org/series/UNRATE">Unemployment</a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Comment</em>: I call this <strong>a tie</strong>. As in the case of inflation-adjusted net worth, Trump gets the benefit of a pre-pandemic era and Biden gets punished by the lingering high unemployment of the pandemic period. The unemployment rate “goes up like a rocket and comes down like a feather.”</p>
+</section>
+<section id="total-net-worth-inflation-adjusted" class="level1">
+<h1>Total Net Worth, Inflation-Adjusted</h1>
+<p><em>Data</em>: <a href="https://fred.stlouisfed.org/series/BOGZ1FL192090005Q">Net Worth</a> and <a href="https://fred.stlouisfed.org/series/CPIAUCSL">Consumer Price Index</a>. To adjust net worth for inflation, I divided net worth by the CPI and multiplied the result by 100. This yields net worth in constant 1983 dollars, 1983 being the base year of the CPI data.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -231,7 +230,9 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Comment</em>: I call this <strong>a tie</strong>. As in the case of inflation-adjusted net worth, Trump gets the benefit of a pre-pandemic era and Biden gets punished by the lingering high unemployment of the pandemic period. The unemployment rate “goes up like a rocket and comes down like a feather.”</p>
+<p>The chart shows inflation-adjusted net worth in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term. For example, inflation-adjusted net worth increased by 17 percent in Trump’s first three years and fell by 3 percent in Biden’s first three years.</p>
+<p><em>Comment</em>: This is a <strong>huge win for Trump</strong>. Trump’s massive corporate tax cut meant much bigger payoffs for shareholders. As the price of a share depends those payoffs, share prices rose sharply. And, remember, I am leaving out Trump’s pandemic year. The depressing effect of the pandemic on asset prices probably hurt asset prices during Biden’s term.</p>
+<p>This turns out to be a recurring theme. My decision to focus on the first three years of each term gives a big advantage to Trump and hamstrings Biden. The first three years of Trump were (obviously) unaffected by the pandemic, whereas the U.S. economy struggled to recover from the pandemic during the first three years of Biden.</p>
 </section>
 <section id="prices" class="level1">
 <h1>Prices</h1>
@@ -246,11 +247,11 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 <p>The chart shows the overall price level in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
-<p><em>Comment</em>: <strong>Big defeat for Biden</strong>. But blaming Biden for the higher inflation during his term is idiotic.</p>
-<p>Virtually every advanced country went through similar inflation at the same time, indicating the effect of a global phenomenon. The simultaneous reopening of the world’s economies after the pandemic overwhelmed the global supply chains. The war in Ukraine disrupted global grain and oil markets.</p>
-<p>Large expenditures by governments may have contributed a bit to the inflation, but it would have been moral malpractice for governments to not help people suffering from a once-a-century pandemic. Moreover, in most countries, the inflation faded without any increase in unemployment (the so-called “soft landing”). If the inflation went away without a big decrease in aggregate demand being required, it may be that the inflation was not caused by an increase in aggregate demand in the first place.</p>
-<p>Finally, inflation in the U.S. is traditionally the responsibility of the Federal Reserve, the central bank. Their experts – whose main job is that of keeping an eye on inflation – did not see the inflation coming. Consequently, they did not attack inflation in a timely manner.</p>
-<p>All in all, Biden gets blamed for the inflation, but by a moronic media and an idiotic public who have no understanding of the issues and have no understanding of the availability of inflation-adjusted data on things like unemployment and GDP.</p>
+<p><em>Comment</em>: <strong>Big defeat for Biden</strong>. But blaming Biden for the higher inflation during his term is, in my opinion, idiotic.</p>
+<p>Virtually every advanced country went through similar inflation at the same time, indicating that the underlying reasons were global. The simultaneous reopening of the world’s economies after the pandemic overwhelmed global supply chains. The war in Ukraine disrupted global grain and oil markets.</p>
+<p>Large expenditures by governments may have contributed a bit to the inflation, but it would have been moral malpractice for governments to not help people suffering from a once-a-century pandemic. Moreover, in most countries, the inflation faded without any increase in unemployment (the so-called “soft landing”). If the inflation went away without a big <em>decrease</em> in aggregate demand having to be engineered, it may be that the inflation was not caused by an <em>increase</em> in aggregate demand in the first place.</p>
+<p>Finally, inflation in the U.S. is traditionally the responsibility of the Federal Reserve, the central bank. Their experts – whose main job is that of keeping an eye on inflation – did not see the inflation coming. Consequently, they did not attack inflation in a timely manner. You can criticize Biden for not being psychic, but it is hard to make the case that he caused the inflation or that he knew that inflation was coming and chose to do nothing to stop it.</p>
+<p>Biden gets blamed for the inflation, but by a moronic media and an idiotic public who have no understanding of the issues. Besides, they don’t seem to realize that they could easily look up inflation-adjusted data on things like unemployment and GDP.</p>
 </section>
 <section id="jobs-added" class="level1">
 <h1>Jobs Added</h1>
@@ -265,7 +266,7 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 <p>The chart shows total non-farm employment in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
-<p><em>Comment</em>: This is a <strong>huge win for Biden</strong>. A record number of new jobs were added and the numbers exceeded pre-pandemic projections. As a result, the labor market remained consistently tight.</p>
+<p><em>Comment</em>: This is a <strong>huge win for Biden</strong>. A record number of new jobs were added and the numbers exceeded pre-pandemic projections.</p>
 </section>
 <section id="wages-inflation-adjusted" class="level1">
 <h1>Wages, Inflation-Adjusted</h1>
@@ -279,12 +280,13 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>The chart shows inflation-adjusted wages in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change during the term.</p>
-<p><em>Comment</em>: This is a <strong>big win for Trump</strong>. Inflation-adjusted wages rose faster during the pre-pandemic phase of Trump’s term. However, wages kept growing during Biden’s term, although at a slower pace.</p>
+<p>The chart shows inflation-adjusted wages in the first 12 quarters of each presidential term as a percentage of its value in the first quarter of the term. In other words, it shows the percentage change in inflation-adjusted wages during the Trump and Biden terms.</p>
+<p><em>Comment</em>: This is a <strong>big win for Trump</strong>. Inflation-adjusted wages rose faster during the pre-pandemic phase of Trump’s term. Biden had to deal with the lingering effects of the pandemic. Inflation-adjusted wages kept growing during Biden’s term, although at a slower pace.</p>
 </section>
 <section id="poverty" class="level1">
 <h1>Poverty</h1>
 <p><em>Data</em>: <a href="https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-people.html">Historical Poverty Tables: People and Families - 1959 to 2023</a> <a href="https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov2.xlsx">Table 2</a> and <a href="https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov3.xlsx">Table 3</a>. Extracted data in <a href="poverty_rates.csv">CSV file</a>.</p>
+<p>The next two charts use the U.S. Census Department’s <em>Official Poverty Measure</em>. This measure looks at a household’s earned income and checks whether that earned income is more than or less than the household’s poverty threshold income.</p>
 <section id="overall-poverty" class="level2">
 <h2 class="anchored" data-anchor-id="overall-poverty">Overall Poverty</h2>
 <div class="cell">
@@ -310,15 +312,41 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 <p><em>Comment</em>: This is a <strong>win for Biden</strong>, though Trump did better in his third year, before the pandemic.</p>
-<p>Although I have used the <em>Official Poverty Rate</em>, I prefer the <em>Supplemental Poverty Rate</em>. I will update to that variable if I can find the data.</p>
+</section>
+<section id="overall-poverty-supplemental-poverty-measure" class="level2">
+<h2 class="anchored" data-anchor-id="overall-poverty-supplemental-poverty-measure">Overall Poverty: Supplemental Poverty Measure</h2>
+<p>The next two charts use the U.S. Census Department’s <em>Supplemental Poverty Measure</em>. This measure looks at a household’s income <em>after deducting taxes and adding government assistance</em> received and checks whether that income is more than or less than the household’s poverty threshold income.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Comment</em>: This is a <strong>win for Biden</strong>, though Trump did better in his third year, before the pandemic. The big increase in Biden’s second year was caused by the ending of the government’s pandemic assistance programs.</p>
+</section>
+<section id="child-poverty-supplemental-poverty-measure" class="level2">
+<h2 class="anchored" data-anchor-id="child-poverty-supplemental-poverty-measure">Child Poverty: Supplemental Poverty Measure</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Comment</em>: This is a <strong>win for Biden</strong>, though Trump did better in his third year, before the pandemic. The big increase in Biden’s second year was caused by the ending of the government’s pandemic assistance programs.</p>
 </section>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
-<p>In most cases – that is for most variables – the U.S. economy did better under Biden than under Trump. Inflation-adjusted wages and inflation-adjusted net worth grew faster in the first three years of Trump. But even in these cases, my decision to focus on the first three years of each presidential term helped Trump and disadvantaged Biden. The first three Trump years were untouched by the pandemic, whereas whereas the first three Biden years were heavily affected by the damaging after-effects of the pandemic. That is especially true of the high inflation in the Biden years.</p>
+<p>In most cases – that is for most variables – the U.S. economy did better under Biden than under Trump. Inflation-adjusted wages and inflation-adjusted net worth grew faster in the first three years of Trump. But even in these cases, my decision to focus on the first three years of each presidential term helped Trump and hurt Biden. The first three Trump years were untouched by the pandemic, whereas whereas the first three Biden years were affected by the damaging after-effects of the pandemic. That is especially true of the high inflation in the Biden years.</p>
 <section id="r-code" class="level3">
-<h3 class="anchored" data-anchor-id="r-code">R Code</h3>
-<p>The R code for data downloads, all calculations, and graphs are available <a href="index_with_code.html">here</a>.</p>
+<h3 class="anchored" data-anchor-id="r-code"><em>R</em> Code</h3>
+<p>The <em>R</em> code for data downloads, all calculations, and graphs are available <a href="index_with_code.html">here</a>.</p>
 
 
 </section>

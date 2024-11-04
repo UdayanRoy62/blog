@@ -67,7 +67,7 @@
     "href": "posts/biden-trump/index.html#child-poverty",
     "title": "Trump and Biden: Their First Three Years",
     "section": "Child Poverty",
-    "text": "Child Poverty\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic.\nAlthough I have used the Official Poverty Rate, I prefer the Supplemental Poverty Rate. I will update to that variable if I can find the data."
+    "text": "Child Poverty\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic."
   },
   {
     "objectID": "posts/post-with-code/index.html",
@@ -75,5 +75,19 @@
     "title": "Post With Code",
     "section": "",
     "text": "This is a post with executable code.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "posts/biden-trump/index.html#overall-poverty-supplemental-poverty-measure",
+    "href": "posts/biden-trump/index.html#overall-poverty-supplemental-poverty-measure",
+    "title": "Trump and Biden: Their First Three Years",
+    "section": "Overall Poverty: Supplemental Poverty Measure",
+    "text": "Overall Poverty: Supplemental Poverty Measure\nThe next two charts use the U.S. Census Department’s Supplemental Poverty Measure. This measure looks at a household’s income after deducting taxes and adding government assistance received and checks whether that income is more than or less than the household’s poverty threshold income.\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic. The big increase in Biden’s second year was caused by the ending of the government’s pandemic assistance programs."
+  },
+  {
+    "objectID": "posts/biden-trump/index.html#child-poverty-supplemental-poverty-measure",
+    "href": "posts/biden-trump/index.html#child-poverty-supplemental-poverty-measure",
+    "title": "Trump and Biden: Their First Three Years",
+    "section": "Child Poverty: Supplemental Poverty Measure",
+    "text": "Child Poverty: Supplemental Poverty Measure\n\n\n\n\n\n\n\n\n\nComment: This is a win for Biden, though Trump did better in his third year, before the pandemic. The big increase in Biden’s second year was caused by the ending of the government’s pandemic assistance programs."
   }
 ]
