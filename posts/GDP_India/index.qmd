@@ -1,7 +1,7 @@
 ---
 title: "India's Gross Domestic Product and Its Components"
 author: "Udayan Roy"
-date: "`r Sys.Date()`"
+date: "November 29, 2024"
 format: html
 editor: visual
 ---
@@ -108,7 +108,7 @@ Data on India's Gross Domestic Product for Quarter `r max(quarterly_gdp$Quarter[
 -   Exports grew [`r round(quarterly_gdp$EX_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, exports has grown [`r round(EX_growth_mean,2)` percent]{style="color: blue;"} annually.)
 -   Imports grew [`r round(quarterly_gdp$IM_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, imports has grown [`r round(IM_growth_mean,2)` percent]{style="color: blue;"} annually.)
 -   Net Exports grew [`r round(quarterly_gdp$NX_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, net exports has grown [`r round(NX_growth_mean,2)` percent]{style="color: blue;"} annually.)
--   To sum up the latest quarter, **GDP growth was above the long-run average. Above-average growth in both consumption and investment spending was the highlight. Government purchases, which has been weak for several past quarters, actually shrank. Exports and imports both grew faster than average, with exports growth outpacing growth in imports. Nothing stuck out.**
+-   Summary of the latest quarter: **Weaker than usual. GDP growth was below the long-run average, dragged down by slower growth in consumption spending. Investment spending and government purchases both grew faster than they usually do. Exports grew significantly slower than usual. Imports shrank.**
 
 ## Gross Domestic Product, Level
 
