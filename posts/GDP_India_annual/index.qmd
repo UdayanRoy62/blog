@@ -1,0 +1,432 @@
+---
+title: "India's Gross Domestic Product and Its Components: Annual Data"
+author: "Udayan Roy"
+date: "January 8, 2025"
+format: html
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+annual <- read_xlsx(
+  path = "india-gdp.xlsx",
+  sheet = "gdp_annual",
+  col_names = TRUE
+) |>
+  mutate(Date = as.Date(paste0(substr(Year, start = 1, stop = 4), 
+                                          "-01-01"))) |>
+  relocate(Date)  
+
+share <- function(x, y){100*x/y}
+share_incr <- function(x, y){100*(x - lag(x, 1))/(y - lag(y, 1))}
+growth <- function(x){100*(x - lag(x, 1))/lag(x, 1)}
+
+annual_big <- annual |>
+  mutate(I = GFCF + CIS,
+         I_share = share(I, GDP),
+         C_share = share(PFCE, GDP),
+         G_share = share(GFCE, GDP),
+         NX = Exports - Imports,
+         NX_share = share(NX, GDP),
+         EX_share = share(Exports, GDP),
+         IM_share = share(Imports, GDP),
+         # D_share = share(Discrepancies, GDP),
+         Total = I_share + C_share + G_share + NX_share,   # Check. This should be 100.
+         C_share_incr = share_incr(PFCE, GDP),
+         I_share_incr = share_incr(I, GDP),
+         G_share_incr = share_incr(GFCE, GDP),
+         EX_share_incr = share_incr(Exports, GDP),
+         IM_share_incr = share_incr(Imports, GDP),
+         NX_share_incr = share_incr(NX, GDP),
+         # D_share_incr = share_incr(Discrepancies, GDP),
+         Total_share_incr = C_share_incr + I_share_incr + G_share_incr + NX_share_incr,    # Check. This should be 100.
+         C_growth = growth(PFCE),
+         G_growth = growth(GFCE),
+         EX_growth = growth(Exports),
+         IM_growth = growth(Imports),
+         I_growth = growth(I),
+         NX_growth = sign(NX - lag(NX, 1))*100*
+           (((abs(lag(NX, 1)) + abs(NX - lag(NX, 1)))/abs(lag(NX, 1)))-1),
+         GDP_growth = growth(GDP)) 
+
+## Average annual growth over data period
+
+date.end <- max(annual_big$Date)
+date.begin <- min(annual_big$Date)
+
+growth_mean <- function(x){
+  (((x[annual_big$Date == date.end]/x[annual_big$Date == date.begin])^(1/(year(date.end) - year(date.begin)))) - 1)*100
+}
+  
+GDP_growth_mean <- growth_mean(annual_big$GDP)
+C_growth_mean <- growth_mean(annual_big$PFCE)
+I_growth_mean <- growth_mean(annual_big$I)
+G_growth_mean <- growth_mean(annual_big$GFCE)
+EX_growth_mean <- growth_mean(annual_big$Exports)
+IM_growth_mean <- growth_mean(annual_big$Imports)
+NX_growth_mean <- sign((annual_big$NX[annual_big$Date == date.end] - annual_big$NX[annual_big$Date == date.begin]))*
+  (((((abs(annual_big$NX[annual_big$Date == date.begin]) +
+         abs(annual_big$NX[annual_big$Date == date.end] - annual_big$NX[annual_big$Date == date.begin]))/
+        abs(annual_big$NX[annual_big$Date == date.begin]))^(1/(year(date.end) - year(date.begin)))) - 1)*100)
+
+
+```
+
+## The Latest Fiscal Year At A Glance
+
+Data on India's Gross Domestic Product for the `r max(annual_big$Year)` fiscal year has just been published. Here are some highlights:
+
+-   Inflation-adjusted Gross Domestic Product was INR `r format(annual_big$GDP[annual_big$Date == max(annual_big$Date)], scientific = FALSE, nsmall = 2, big.mark=",")` crores at constant 2011-12 prices. (A crore is ten million or 10<sup>7</sup>.)\
+-   This represents a growth of [`r round(annual_big$GDP_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"} compared to the previous fiscal year. (The available data spans the `r min(annual_big$Year)` fiscal year through the `r max(annual_big$Year)` fiscal year. That's `r year(date.end) - year(date.begin)` years. Over the past `r year(date.end) - year(date.begin)` years, GDP has grown [`r round(GDP_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Consumption spending grew [`r round(annual_big$C_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"}. (Over the past `r year(date.end) - year(date.begin)` years, consumption spending has grown [`r round(C_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Investment spending grew [`r round(annual_big$I_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"}. (Over the past `r year(date.end) - year(date.begin)` years, investment spending has grown [`r round(I_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Government purchases grew [`r round(annual_big$G_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"}. (Over the past `r year(date.end) - year(date.begin)` years, government purchases has grown [`r round(G_growth_mean,2)` percent]{style="color: blue;"} annually.)\
+-   Exports grew [`r round(annual_big$EX_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"}. (Over the past `r year(date.end) - year(date.begin)` years, exports has grown [`r round(EX_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Imports grew [`r round(annual_big$IM_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"}. (Over the past `r year(date.end) - year(date.begin)` years, imports has grown [`r round(IM_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Net Exports grew [`r round(annual_big$NX_growth[annual_big$Date==max(annual_big$Date)],2)` percent]{style="color: red;"}. (Over the past `r year(date.end) - year(date.begin)` years, net exports has grown [`r round(NX_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Summary of the latest quarter: **Weaker performance than usual. GDP growth was a bit higher than the long-run average, but quite a bit slower than in the last three years. Consumption spending grew nearly twice as fast as the post- Independence average. Investment grew just slightly faster than the post-Independence average.**
+
+## Gross Domestic Product, Level
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+options(scipen = 999)
+library(scales)
+
+graphit <- function(var, title, subtitle){
+  ggplot(data = annual_big, mapping = aes(x = Date)) +
+  geom_line(mapping = aes(y = var)) +
+  geom_point(mapping = aes(y = var)) +
+  labs (x = NULL, y = NULL, 
+        title = title,
+        subtitle = subtitle,
+        caption = "Each yearly tick mark represents April 1 (which is the first day of the April 1 -- March 31 fiscal year).\nThe data are from the Government of India.") +
+  theme_bw() + 
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_date(labels = date_format("%Y"), date_breaks = "10 years")
+}
+
+graphit(var = annual_big$GDP, title = "India's GDP", subtitle = "Annual GDP is in tens of millions (crores) of constant 2011-12 Rupees.")
+
+```
+
+*Comment*: [Steady growth. The historic nature of the COVID shock is clear.]{style="color: red;"}
+
+## Gross Domestic Product, Growth Rate
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+subtitle_growth <- function(index_name, index, index_mean){
+	paste("In the latest fiscal year,", index_name, "grew", round(index[annual_big$Date==max(annual_big$Date)],2), "percent. \nThe dashed line shows the average since the 1950-51 fiscal year:", round(index_mean,2), "percent.")
+}
+
+subtitle_share <- function(index_name, index, index_mean){
+	paste("In the latest fiscal year,", index_name, "was", round(index[annual_big$Date==max(annual_big$Date)],2), "percent of GDP. \nThe dashed line shows the average since the 1950-51 fiscal year:", round(index_mean,2), "percent.")
+}
+
+subtitle_share_incr <- function(index_name, index, index_mean){
+	paste("In the latest fiscal year, the increase in", index_name, "was\n", round(index[annual_big$Date==max(annual_big$Date)],2), "percent of the increase in GDP. \nThe dashed line shows the average since the 1950-51 fiscal year:", round(index_mean,2), "percent.")
+}
+
+
+graphit2 <- function(index, title, subtitle, index_mean){
+  ggplot(data = annual_big, mapping = aes(x = Date)) +
+  geom_line(mapping = aes(y = index)) +
+  geom_point(mapping = aes(y = index))  +
+  geom_hline(aes(yintercept = index_mean), linetype = "dashed") +
+  labs (x = NULL, y = NULL, 
+        title = title,
+        subtitle = subtitle,
+        caption = "Each yearly tick mark represents April 1 (which is the first day of the April 1 -- March 31 fiscal year).\nThe data are from the Government of India.") +
+  theme_bw() + 
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_date(labels = date_format("%Y"), date_breaks = "10 years")
+}
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) GDP", annual_big$GDP_growth, GDP_growth_mean)
+
+graphit2(index = annual_big$GDP_growth, index_mean = GDP_growth_mean, title = "Growth Rate of India's GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Note that after 1980 -- and most certainly after 1990 -- there have been few instances of below-average growth. And barring the COVID shock the downturns have been mild after 1990. The difference between the pre-1990 and post-1990 periods is very clear.]{style="color: red;"}
+
+## The Components of GDP (*C*, *I*, *G*, and *NX*)
+
+GDP is the rupee value of all production, roughly speaking. Consequently, GDP is also total income and total spending. Total spending is usually broken down into four *components*:
+
+-   consumption spending (*C*, which is present oriented),
+-   investment spending (*I*, which is future oriented),
+-   government purchases (*G*), and
+-   net exports (*NX* = *Exports* - *Imports*).
+
+Therefore, *GDP* = *C* + *I* + *G* + *NX*. It is important to know which *kind* of spending -- that is, which component of GDP -- contributes how much to GDP and its growth. Policy makers may be able to design better macroeconomic policies if they can spot the component that is causing trouble.
+
+There are a dozen charts below, three for each of the four components.
+
+-   The *first* of the three charts for a particular component shows that component's *growth rate* over the previous year.
+-   The *second* shows that component's share of total spending (that is, its *share of GDP*) during each fiscal year.
+-   And the *third* shows the increase in that component over the previous year as a share of the increase in total spending over the previous year (that is, *its increase as a share of the increase in GDP*). [*Caution*: I am not quite sure about 1966. That year is a clear outlier and it throws off this third chart for every GDP component. I am aware that India went through a major macroeconomic crisis that year. But I am surprised by the way the third chart for every GDP component gets thrown off in 1966.]{style="color: blue;"}
+
+Each chart shows the relevant values for each fiscal year as well as the relevant long-term average from 1950-51 onwards (shown with a dashed horizontal line).
+
+### Consumption Spending
+
+*Importance*: Consumption spending was `r round(annual_big$C_share[annual_big$Date==max(annual_big$Date)],2)` percent of GDP in `r max(annual_big$Year)`, the latest fiscal year. This can be compared with Consumption's `r round(mean(annual_big$C_share, na.rm = TRUE),2)` percent share of GDP over the full data period (`r min(annual_big$Year)` through `r max(annual_big$Year)`).
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) consumption spending", annual_big$C_growth, C_growth_mean)
+
+graphit2(index = annual_big$C_growth, index_mean = C_growth_mean, title = "Growth Rate of Consumption Spending", subtitle = mysubtitle)
+
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share("(inflation-adjusted) consumption spending", annual_big$C_share, mean(annual_big$C_share, na.rm = TRUE))
+
+graphit2(index = annual_big$C_share, index_mean = mean(annual_big$C_share, na.rm = TRUE), title = "Share of Consumption Spending in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [This is a striking chart and it depicts a big macroeconomic change in India since Independence. Consumption spending has fallen dramatically from approximately 85 percent of GDP in the early 1950s to 55 percent of GDP in recent years. The decline in the share of consumption spending seems to have stabilized over the last two decades.]{style="color: red;"}
+
+[As can be seen in charts below, the decline in the share of consumption has been matched by increases in Investment and, to a lesser extent, Government Purchases.]{style="color: red;"}
+
+[Why did these changes occur? Did government policies penalize consumption? Was it caused by an increase in income inequality? (Richer people save more; poorer people spend whatever they earn.)]{style="color: red;"}
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) consumption spending", annual_big$C_share_incr, mean(annual_big$C_share_incr, na.rm = TRUE))
+
+graphit2(index = annual_big$C_share_incr, index_mean = mean(annual_big$C_share_incr, na.rm = TRUE), title = "Increase in Consumption Spending as a share of increase in GDP", subtitle = mysubtitle)
+
+
+```
+
+*Comment*: [Something weird about the 1966 data is making this chart look weird.]{style="color: red;"}
+
+### Investment Spending
+
+*Importance*: Investment spending was `r round(annual_big$I_share[annual_big$Date==max(annual_big$Date)],2)` percent of GDP in the latest fiscal year. This can be compared with Investment's `r round(mean(annual_big$I_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) investment spending", annual_big$I_growth, I_growth_mean)
+
+graphit2(index = annual_big$I_growth, index_mean = I_growth_mean, title = "Growth Rate of Investment Spending", subtitle = mysubtitle)
+
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share("(inflation-adjusted) investment spending", annual_big$I_share, mean(annual_big$I_share, na.rm = TRUE))
+
+graphit2(index = annual_big$I_share, index_mean = mean(annual_big$I_share, na.rm = TRUE), title = "Share of Investment Spending in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Note the dramatic increase in Investment as a share of GDP. The decrease in the share of Consumption spending is the other side of this coin.]{style="color: red;"}
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) investment spending", annual_big$I_share_incr, mean(annual_big$I_share_incr, na.rm = TRUE))
+
+graphit2(index = annual_big$I_share_incr, index_mean = mean(annual_big$I_share_incr, na.rm = TRUE), title = "Increase in Investment Spending as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Something weird about the 1966 data is making this chart look weird.]{style="color: red;"}
+
+### Government Purchases
+
+*Importance*: Government Purchases was `r round(annual_big$G_share[annual_big$Date==max(annual_big$Date)],2)` percent of GDP in the latest fiscal year. This can be compared with Government Purchases's `r round(mean(annual_big$G_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) government spending", annual_big$G_growth, G_growth_mean)
+
+graphit2(index = annual_big$G_growth, index_mean = G_growth_mean, title = "Growth Rate of Government Spending", subtitle = mysubtitle)
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share("(inflation-adjusted) government spending", annual_big$G_share, mean(annual_big$G_share, na.rm = TRUE))
+
+graphit2(index = annual_big$G_share, index_mean = mean(annual_big$G_share, na.rm = TRUE), title = "Share of Government Spending in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Note the dramatic increase in Government Purchases as a share of GDP between 1950-51 and 1986-87. The decrease in the share of Consumption spending is the other side of this coin. Since 1986-87, government purchases has stayed within bounds.]{style="color: red;"}
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) investment spending", annual_big$G_share_incr, mean(annual_big$G_share_incr, na.rm = TRUE))
+
+graphit2(index = annual_big$G_share_incr, index_mean = mean(annual_big$G_share_incr, na.rm = TRUE), title = "Increase in Government Spending as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Again, something weird about the 1966 data is making this chart look weird.]{style="color: red;"}
+
+### Net Exports
+
+*Importance*: Net Exports was `r round(annual_big$NX_share[annual_big$Date==max(annual_big$Date)],2)` percent of GDP in the latest fiscal year. This can be compared with Net Exports's `r round(mean(annual_big$NX_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) net exports", annual_big$NX_growth, NX_growth_mean)
+
+graphit2(index = annual_big$NX_growth, index_mean = NX_growth_mean, title = "Growth Rate of Net Exports", subtitle = mysubtitle)
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share("(inflation-adjusted) net exports", annual_big$NX_share, mean(annual_big$NX_share, na.rm = TRUE))
+
+graphit2(index = annual_big$NX_share, index_mean = mean(annual_big$NX_share, na.rm = TRUE), title = "Share of net exports in GDP", subtitle = mysubtitle)
+
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) net exports", annual_big$NX_share_incr, mean(annual_big$NX_share_incr, na.rm = TRUE))
+
+graphit2(index = annual_big$NX_share_incr, index_mean = mean(annual_big$NX_share_incr, na.rm = TRUE), title = "Increase in Net Exports as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+#### Exports
+
+*Importance*: Exports was `r round(annual_big$EX_share[annual_big$Date==max(annual_big$Date)],2)` percent of GDP in the latest fiscal year. This can be compared with Exports's `r round(mean(annual_big$EX_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) exports", annual_big$EX_growth, EX_growth_mean)
+
+graphit2(index = annual_big$EX_growth, index_mean = EX_growth_mean, title = "Growth Rate of Exports", subtitle = mysubtitle)
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share("(inflation-adjusted) exports", annual_big$EX_share, mean(annual_big$EX_share, na.rm = TRUE))
+
+graphit2(index = annual_big$EX_share, index_mean = mean(annual_big$EX_share, na.rm = TRUE), title = "Share of exports in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Here we see another major macroeconomic change in post-Independence India. Globalization!]{style="color: red;"}
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) exports", annual_big$EX_share_incr, mean(annual_big$EX_share_incr, na.rm = TRUE))
+
+graphit2(index = annual_big$EX_share_incr, index_mean = mean(annual_big$EX_share_incr, na.rm = TRUE), title = "Increase in Exports as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [Again, something weird about the 1966 data is making this chart look weird. *What happened??*]{style="color: red;"}
+
+#### Imports
+
+*Importance*: Imports was `r round(annual_big$IM_share[annual_big$Date==max(annual_big$Date)],2)` percent of GDP in the latest fiscal year. This can be compared with Imports's `r round(mean(annual_big$IM_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) imports", annual_big$IM_growth, IM_growth_mean)
+
+graphit2(index = annual_big$IM_growth, index_mean = IM_growth_mean, title = "Growth Rate of Imports", subtitle = mysubtitle)
+
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share("(inflation-adjusted) imports", annual_big$IM_share, mean(annual_big$IM_share, na.rm = TRUE))
+
+graphit2(index = annual_big$IM_share, index_mean = mean(annual_big$IM_share, na.rm = TRUE), title = "Share of imports in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [As was the case for the Exports chart, here we see again the major macroeconomic change that globalization brought to post-Independence India.]{style="color: red;"}
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) imports", annual_big$IM_share_incr, mean(annual_big$IM_share_incr, na.rm = TRUE))
+
+graphit2(index = annual_big$IM_share_incr, index_mean = mean(annual_big$IM_share_incr, na.rm = TRUE), title = "Increase in Imports as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+*Comment*: [As was the case for all the other components of GDP, something weird about the 1966 data is making this chart look weird. *What happened??*]{style="color: red;"}
