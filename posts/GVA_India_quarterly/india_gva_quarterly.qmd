@@ -1,0 +1,609 @@
+---
+title: "India's Gross Value Added and Its Components: Quarterly"
+author: "Udayan Roy"
+date: "2025-05-30"
+format: html
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+# library(plotly)
+
+quarterly <- read_xlsx(
+  path = "q_2011_12_prices.xlsx",
+  sheet = "Sheet1",
+  col_names = TRUE
+) |>
+  mutate(Date = as.Date(paste0(as.numeric(substr(Year, start = 1, stop = 4)), "-", case_when(Quarter == 1 ~ "01",  
+# Q1 starts on April 1. But R needs to see Q1
+# as coming before Q4 which starts on Jan 1 of the next year.
+          Quarter == 2 ~ "04",     
+          Quarter == 3 ~ "07",    
+          Quarter == 4 ~ "10"), "-01"))) |>
+  relocate(Date) |>     # Now Date is the first column.
+  select(c(Date:GVA))
+
+
+share <- function(x) {
+  100*x/quarterly$GVA
+}
+
+share_incr <- function(x){
+  100*(x - lag(x, 4))/(quarterly$GVA - lag(quarterly$GVA, 4))
+}
+
+growth <- function(x){
+  100*(x - lag(x, 4))/lag(x, 4)
+}
+
+quarterly_gva <- quarterly |>
+  mutate(ag_share = share(Agriculture_Livestock_Forestry_Fishing),
+         mining_share = share(Mining_Quarrying),
+         primary_share = share(Primary_Sector),
+         secondary_share = share(Secondary_Sector),
+         tertiary_share = share(Tertiary_Sector),
+         manuf_share = share(Manufacturing),
+         elec_share = share(Electricity_Gas_Water_Supply_Other_Utility_Services),
+         construc_share = share(Construction),
+         trade_share = share(Trade_Hotels_Transport_Communication_Services_related_to_Broadcasting),
+         fin_share = share(Financial_Real_Estate_Professional_Services),
+         pub_share = share(Public_Administration_Defence_Other_Services),
+         Total1_share = primary_share + secondary_share + tertiary_share,
+         ag_share_incr = share_incr(Agriculture_Livestock_Forestry_Fishing),
+         mining_share_incr = share_incr(Mining_Quarrying),
+         primary_share_incr = share_incr(Primary_Sector),
+         secondary_share_incr = share_incr(Secondary_Sector),
+         tertiary_share_incr = share_incr(Tertiary_Sector),
+         manuf_share_incr = share_incr(Manufacturing),
+         elec_share_incr = share_incr(Electricity_Gas_Water_Supply_Other_Utility_Services),
+         construc_share_incr = share_incr(Construction),
+         trade_share_incr = share_incr(Trade_Hotels_Transport_Communication_Services_related_to_Broadcasting),
+         fin_share_incr = share_incr(Financial_Real_Estate_Professional_Services),
+         pub_share_incr = share_incr(Public_Administration_Defence_Other_Services),
+         Total1_share_incr = primary_share_incr + secondary_share_incr + tertiary_share_incr,
+         gva_growth = growth(GVA),
+         ag_growth = growth(Agriculture_Livestock_Forestry_Fishing),
+         mining_growth = growth(Mining_Quarrying),
+         primary_growth = growth(Primary_Sector),
+         secondary_growth = growth(Secondary_Sector),
+         tertiary_growth = growth(Tertiary_Sector),
+         manuf_growth = growth(Manufacturing),
+         elec_growth = growth(Electricity_Gas_Water_Supply_Other_Utility_Services),
+         construc_growth = growth(Construction),
+         trade_growth = growth(Trade_Hotels_Transport_Communication_Services_related_to_Broadcasting),
+         fin_growth = growth(Financial_Real_Estate_Professional_Services),
+         pub_growth = growth(Public_Administration_Defence_Other_Services))
+
+## Average annual growth over data period
+
+date.begin <- quarterly_gva$Date[year(quarterly_gva$Date) == year(min(quarterly_gva$Date)) & quarter(quarterly_gva$Date) == quarter(max(quarterly_gva$Date))]
+date.end <- max(quarterly_gva$Date)
+
+growth_mean <- function(x){
+  (((x[quarterly_gva$Date == date.end]/x[quarterly_gva$Date == date.begin])^(1/(year(date.end) - year(date.begin)))) - 1)*100
+}
+
+gva_growth_mean <- growth_mean(quarterly_gva$GVA)
+ag_growth_mean <- growth_mean(quarterly_gva$Agriculture_Livestock_Forestry_Fishing)
+mining_growth_mean <- growth_mean(quarterly_gva$Mining_Quarrying)
+primary_growth_mean <- growth_mean(quarterly_gva$Primary_Sector)
+secondary_growth_mean <- growth_mean(quarterly_gva$Secondary_Sector)
+tertiary_growth_mean <- growth_mean(quarterly_gva$Tertiary_Sector)
+manuf_growth_mean <- growth_mean(quarterly_gva$Manufacturing)
+elec_growth_mean <- growth_mean(quarterly_gva$Electricity_Gas_Water_Supply_Other_Utility_Services)
+construc_growth_mean <- growth_mean(quarterly_gva$Construction)
+trade_growth_mean <- growth_mean(quarterly_gva$Trade_Hotels_Transport_Communication_Services_related_to_Broadcasting)
+fin_growth_mean <- growth_mean(quarterly_gva$Financial_Real_Estate_Professional_Services)
+pub_growth_mean <- growth_mean(quarterly_gva$Public_Administration_Defence_Other_Services)
+# tax_growth_mean <- growth_mean(quarterly_gva$Net_Taxes)
+
+```
+
+## The Latest Quarter At A Glance
+
+Data on India's Gross Value Added for Quarter `r max(quarterly_gva$Quarter[quarterly_gva$Year==max(quarterly_gva$Year)])` of the `r max(quarterly_gva$Year)` fiscal year has just been published. Here are some highlights:
+
+-   Inflation-adjusted Gross Value Added was INR `r format(quarterly_gva$GVA[quarterly_gva$Date == max(quarterly_gva$Date)], scientific = FALSE, nsmall = 2, big.mark=",")` crores at constant 2011-12 prices. (A crore is ten million or 10<sup>7</sup>.)
+-   This represents a growth of [`r round(quarterly_gva$gva_growth[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent]{style="color: red;"} compared to the same quarter in the previous fiscal year. (The available quarterly data spans Quarter `r min(quarterly_gva$Quarter[quarterly_gva$Date==min(quarterly_gva$Date)])` of the `r min(quarterly_gva$Year)` fiscal year through Quarter `r max(quarterly_gva$Quarter[quarterly_gva$Date==max(quarterly_gva$Date)])` of the `r max(quarterly_gva$Year)` fiscal year. That's roughly `r  year(max(quarterly_gva$Date)) - year(min(quarterly_gva$Date))` years. Over this period, GVA has grown [`r round(gva_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Output of the *primary sector* (consisting of the Agriculture and Mining sectors) grew [`r round(quarterly_gva$primary_growth[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent]{style="color: red;"}. (Over the past `r  year(max(quarterly_gva$Date)) - year(min(quarterly_gva$Date))` years, primary sector output has grown [`r round(primary_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Output of the *secondary sector* (consisting of the manufacturing sector, the electricity, gas, water supply and other utility services sector, and the construction sector) grew [`r round(quarterly_gva$secondary_growth[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent]{style="color: red;"}. (Over the past `r  year(max(quarterly_gva$Date)) - year(min(quarterly_gva$Date))` years, secondary sector output has grown [`r round(secondary_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Output of the *tertiary sector* (consisting of the trade hotels transport communication broadcasting sector, the financial real estate professional services sector, and the public administration defence and other services sector) grew [`r round(quarterly_gva$tertiary_growth[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent]{style="color: red;"}. (Over the past `r  year(max(quarterly_gva$Date)) - year(min(quarterly_gva$Date))` years, tertiary sector output has grown [`r round(tertiary_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Within the primary sector, output of the *agriculture* sector grew [`r round(quarterly_gva$ag_growth[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent]{style="color: red;"}. (Over the past `r  year(max(quarterly_gva$Date)) - year(min(quarterly_gva$Date))` years, agriculture sector output has grown [`r round(ag_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Also within the primary sector, output of the *mining* sector grew [`r round(quarterly_gva$mining_growth[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent]{style="color: red;"}. (Over the past `r  year(max(quarterly_gva$Date)) - year(min(quarterly_gva$Date))` years, mining sector output has grown [`r round(mining_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Summary: **The latest quarter was slightly better than usual. Total inflation-adjusted output (*GVA*) grew *faster* than its long-run average (that is, the average since Quarter `r min(quarterly_gva$Quarter[quarterly_gva$Date==min(quarterly_gva$Date)])` of the `r min(quarterly_gva$Year)` fiscal year). All three sectors -- *primary*, *secondary*, and *tertiary* -- grew slightly faster than their respective long-run average growth rates. Within the primary sector, *agriculture* grew more than a percentage point faster than its long-run rate.**
+
+### Background
+
+In this report, I am looking at the Indian economy from the *supply* (or production) side. The Indian government publishes data every quarter on the incomes generated by economic activity in the various sectors of the economy. As the total of these sectoral incomes is the *Gross Value Added*, it is useful to compare each sector's income to the GVA.
+
+GVA is related to *Gross Domestic Product*, the measure of aggregate economic activity that most people are familiar with, in the following way: *GDP* = *GVA* + *Net Taxes* = *GVA* + (*Taxes* - *Subsidies*). Over the last 50 quarters or so, Net Taxes, which is the difference between GDP and GVA, has varied between 4 percent and 12 percent of GDP.
+
+The various sectors of the Indian economy are grouped into the *Primary*, *Secondary*, and *Tertiary* sectors. So, the incomes generated by these three sectors add up to GVA. The Primary sector consists of *Agriculture, Livestock, Forestry and Fishing* (*Agriculture_plus* from now on) and *Mining and Quarrying* (*Mining_plus*). The Secondary sector consists of *Manufacturing*, *Construction, and Electricity, Gas, Water Supply and Other Utility Services* (*Electricity_plus*). The Tertiary sector consists of *Trade, Hotels, Transport, Communication and Services related to Broadcasting* (*Trade_plus*), *Financial, Real Estate and Professional Services* (*Financial_plus*), and *Public Administration, Defence and Other Services* (*Public_Admin_plus*).
+
+## Gross Value Added, Level
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+options(scipen = 999)
+library(scales)
+
+graphit <- function(var, title, subtitle){
+  ggplot(data = quarterly_gva, mapping = aes(x = Date)) +
+  geom_line(mapping = aes(y = var)) +
+  geom_point(mapping = aes(y = var)) +
+  labs (x = NULL, y = NULL, 
+        title = title,
+        subtitle = subtitle,
+        caption = "Each yearly tick mark represents April 1 (which is the first day of the April 1 -- March 31 fiscal year).\nThe data are from the Government of India.") +
+  theme_bw() + 
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_date(labels = date_format("%Y"), date_breaks = "2 years")
+}
+
+GVA_chart <- graphit(var = quarterly_gva$GVA, title = "India's GVA", subtitle = "Quarterly GVA is in tens of millions (crores) of constant 2011-12 Rupees.")
+
+GVA_chart
+
+```
+
+*Comment*: Just eyeball the pre-pandemic and post-pandemic parts of the chart for a few seconds. Note the increased volatility *after* the pandemic, with sharp declines in the first quarter followed by equally sharp increases in the subsequent quarters. I wonder why this is so. Things seem to be returning to the pre-pandemic pattern (of mild increases). However, the question remains: *Why has the first quarter (April -- June) been so far below the pre-pandemic trend after the pandemic? Conversely, why has fourth quarter been so close to the pre-pandemic trend?*
+
+## Gross Value Added, Growth Rate
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+subtitle_growth <- function(index_name, index, index_mean){
+	paste("In the latest quarter,", index_name, "grew", round(index[quarterly_gva$Date==max(quarterly_gva$Date)],2), "percent. \nThe dashed line shows the average since Quarter", min(quarterly_gva$Quarter[quarterly_gva$Date==min(quarterly_gva$Date)]), "of the",  min(quarterly_gva$Year), "fiscal year:", round(index_mean,2), "percent.")
+}
+
+subtitle_share <- function(index_name, index, index_mean){
+	paste("In the latest quarter,", index_name, "was", round(index[quarterly_gva$Date==max(quarterly_gva$Date)],2), "percent of GVA. \nThe dashed line shows the average since Quarter", min(quarterly_gva$Quarter[quarterly_gva$Date==min(quarterly_gva$Date)]), "of the",  min(quarterly_gva$Year), "fiscal year:", round(index_mean,2), "percent.")
+}
+
+subtitle_share_incr <- function(index_name, index, index_mean){
+	paste("In the latest quarter, the increase in", index_name, "was\n", round(index[quarterly_gva$Date==max(quarterly_gva$Date)],2), "percent of the increase in GVA. \nThe dashed line shows the average since Quarter", min(quarterly_gva$Quarter[quarterly_gva$Date==min(quarterly_gva$Date)]), "of the",  min(quarterly_gva$Year), "fiscal year:", round(index_mean,2), "percent.")
+}
+
+
+graphit2 <- function(index, title, subtitle, index_mean){
+  ggplot(data = quarterly_gva, mapping = aes(x = Date)) +
+  geom_line(mapping = aes(y = index)) +
+  geom_point(mapping = aes(y = index))  +
+  geom_hline(aes(yintercept = index_mean), linetype = "dashed") +
+  labs (x = NULL, y = NULL, 
+        title = title,
+        subtitle = subtitle,
+        caption = "Each yearly tick mark represents April 1 (which is the first day of the April 1 -- March 31 fiscal year).\nThe data are from the Government of India.") +
+  theme_bw() + 
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_date(labels = date_format("%Y"), date_breaks = "2 years")
+}
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) GVA", quarterly_gva$gva_growth, gva_growth_mean)
+
+gva_growth_chart <- graphit2(index = quarterly_gva$gva_growth, index_mean = gva_growth_mean, title = "Growth Rate of India's GVA", subtitle = mysubtitle)
+
+gva_growth_chart
+
+```
+
+## The Components of GVA (*Primary*, *Secondary*, and *Tertiary*)
+
+```{=html}
+<!--
+GVA is the rupee value of all production, roughly speaking. This total output is usually broken down into *sectors*:
+
+-   primary sector's output,
+-   secondary sector's output, and
+-   tertiary sector's output.
+-->
+```
+
+It is important to know which *sector*'s output contributes how much to total output (*GVA*) and its growth. Policy makers may be able to design better macroeconomic policies if they can spot the sector that is in trouble.
+
+The charts below consist of *three* charts for each sector (or sub-sector).
+
+-   The *first* of the three charts for a particular sector shows the *growth rate* of that sector over the previous year (or four quarters).
+-   The *second* shows that sector's share of total output (that is, the sector's *share of GVA*).
+-   And the *third* shows the *increase* in the sector's income over the previous year as a share of the *increase* in GVA.
+
+Each chart shows the relevant values for each quarter as well as the relevant long-term average from 2011 onwards (shown with a dashed horizontal line).
+
+### Primary Sector
+
+*Importance*: Income generated in the Primary sector was `r round(quarterly_gva$primary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter (Quarter `r max(quarterly_gva$Quarter[quarterly_gva$Year==max(quarterly_gva$Year)])` of the `r max(quarterly_gva$Year)` fiscal year). This can be compared with the Primary sector's `r round(mean(quarterly_gva$primary_share, na.rm = TRUE),2)` percent share of GVA over the full data period (spanning Quarter `r min(quarterly_gva$Quarter[quarterly_gva$Date==min(quarterly_gva$Date)])` of the `r min(quarterly_gva$Year)` fiscal year through Quarter `r max(quarterly_gva$Quarter[quarterly_gva$Date==max(quarterly_gva$Date)])` of the `r max(quarterly_gva$Year)` fiscal year).
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) primary output", quarterly_gva$primary_growth, primary_growth_mean)
+
+graphit2(index = quarterly_gva$primary_growth, index_mean = primary_growth_mean, title = "Growth Rate of Primary Sector's Output", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) primary output", quarterly_gva$primary_share, mean(quarterly_gva$primary_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$primary_share, index_mean = mean(quarterly_gva$primary_share, na.rm = TRUE), title = "Share of Primary Sector's Output in GVA", subtitle = mysubtitle)
+
+
+```
+
+*Comment*: Note the seasonal pattern: highest share in the third quarter (Oct. -- Dec.) followed by declining shares in the rest of the year.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) primary output", quarterly_gva$primary_share_incr, mean(quarterly_gva$primary_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$primary_share_incr, index_mean = mean(quarterly_gva$primary_share_incr, na.rm = TRUE), title = "Increase in Primary Sector's Output as a share of increase in GVA", subtitle = mysubtitle)
+```
+
+### Secondary Sector
+
+*Importance*: Income generated in the Secondary sector was `r round(quarterly_gva$secondary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Secondary sector's `r round(mean(quarterly_gva$secondary_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) secondary output", quarterly_gva$secondary_growth, secondary_growth_mean)
+
+graphit2(index = quarterly_gva$secondary_growth, index_mean = secondary_growth_mean, title = "Growth Rate of secondary Sector's Output", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) secondary output", quarterly_gva$secondary_share, mean(quarterly_gva$secondary_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$secondary_share, index_mean = mean(quarterly_gva$secondary_share, na.rm = TRUE), title = "Share of Secondary Sector's Output in GVA", subtitle = mysubtitle)
+```
+
+*Comment*: The seasonal pattern is noticeable, though not as prominent as for the primary sector. In most years, the sector's share is lowest in the third quarter. This could simply be the effect of the seasonal swings in the primary sector: When the primary sector's share rises, the other sectors' shares fall. After all, the shares must add up to 100%.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) secondary output", quarterly_gva$secondary_share_incr, mean(quarterly_gva$secondary_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$secondary_share_incr, index_mean = mean(quarterly_gva$secondary_share_incr, na.rm = TRUE), title = "Increase in secondary Sector's Output as a share of increase in GVA", subtitle = mysubtitle)
+
+
+```
+
+### Tertiary Sector
+
+*Importance*: Income generated in the Tertiary sector was `r round(quarterly_gva$tertiary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Tertiary sector's `r round(mean(quarterly_gva$tertiary_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) tertiary output", quarterly_gva$tertiary_growth, tertiary_growth_mean)
+
+graphit2(index = quarterly_gva$tertiary_growth, index_mean = tertiary_growth_mean, title = "Growth Rate of tertiary Sector's Output", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) tertiary output", quarterly_gva$tertiary_share, mean(quarterly_gva$tertiary_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$tertiary_share, index_mean = mean(quarterly_gva$tertiary_share, na.rm = TRUE), title = "Share of tertiary Sector's Output in GVA", subtitle = mysubtitle)
+
+
+```
+
+*Comment*: Again, the seasonal pattern is noticeable. In most years, the sector's share is lowest in the third quarter followed by increasing shares in the rest of the year. This could simply be the effect of the seasonal swings in the primary sector: When the primary sector's share rises, the other sectors' shares fall.
+
+(It could be that the tertiary sector has an intrinsic seasonal pattern that affects the other two sectors. But that seems far fetched. It's more likely that seasonal cycles in agriculture's share of GVA drive the other sectors' shares, in the opposite direction.)
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) tertiary output", quarterly_gva$tertiary_share_incr, mean(quarterly_gva$tertiary_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$tertiary_share_incr, index_mean = mean(quarterly_gva$tertiary_share_incr, na.rm = TRUE), title = "Increase in tertiary Sector's Output as a share of increase in GVA", subtitle = mysubtitle)
+
+```
+
+## A Closer Look at the Primary Sector
+
+### Agriculture, Forestry and Fishing
+
+*Importance*: Income generated in the *Agriculture_plus* sector was `r round(quarterly_gva$ag_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Agriculture_plus sector's `r round(mean(quarterly_gva$ag_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Primary sector were `r round(quarterly_gva$primary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$primary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Agriculture, Forestry and Fishing", quarterly_gva$ag_growth, ag_growth_mean)
+
+graphit2(index = quarterly_gva$ag_growth, index_mean = ag_growth_mean, title = "Growth Rate of Output: Agriculture, Forestry and Fishing", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Agriculture, Forestry and Fishing", quarterly_gva$ag_share, mean(quarterly_gva$ag_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$ag_share, index_mean = mean(quarterly_gva$ag_share, na.rm = TRUE), title = "Share of Sector's Output in GVA: Agriculture, Forestry and Fishing", subtitle = mysubtitle)
+
+
+```
+
+*Comment*: Note that the seasonal pattern in *Agriculture, Forestry and Fishing* is very similar to that in the Primary sector as a whole. This is not surprising because most of the Primary sector is Agriculture, Forestry and Fishing while *Mining and Quarrying* has a small residual share.
+
+Note also that Agriculture, Forestry and Fishing is in a long-term relative decline.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Agriculture, Forestry and Fishing", quarterly_gva$ag_share_incr, mean(quarterly_gva$ag_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$ag_share_incr, index_mean = mean(quarterly_gva$ag_share_incr, na.rm = TRUE), title = "Increase in Sector's Output as a share of increase in GVA: Agriculture, Forestry and Fishing", subtitle = mysubtitle)
+
+```
+
+### Mining and Quarrying
+
+*Importance*: Income generated in the *Mining_plus* sector was `r round(quarterly_gva$mining_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Mining_plus sector's `r round(mean(quarterly_gva$mining_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Primary sector were `r round(quarterly_gva$primary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$primary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output in Mining and Quarrying", quarterly_gva$mining_growth, mining_growth_mean)
+
+graphit2(index = quarterly_gva$mining_growth, index_mean = mining_growth_mean, title = "Growth Rate of Output in Mining and Quarrying", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output in Mining and Quarrying", quarterly_gva$mining_share, mean(quarterly_gva$mining_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$mining_share, index_mean = mean(quarterly_gva$mining_share, na.rm = TRUE), title = "Share of Mining and Quarrying Output in GVA", subtitle = mysubtitle)
+
+```
+
+*Comment*: *Mining and Quarrying* seems to have its own seasonal pattern, with peak shares, most often, in the *fourth* quarter. I wonder why this is so. Could it be a lagged effect of the seasonal pattern in agriculture where peak shares are most often in the *third* quarter?
+
+Also, note that this sector is in a clear long-term relative decline.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output in Mining and Quarrying", quarterly_gva$mining_share_incr, mean(quarterly_gva$mining_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$mining_share_incr, index_mean = mean(quarterly_gva$mining_share_incr, na.rm = TRUE), title = "Increase in Mining and Quarrying Output as a share of increase in GVA", subtitle = mysubtitle)
+
+```
+
+## A Closer Look at the Secondary Sector
+
+### Manufacturing
+
+*Importance*: Income generated in the *Manufacturing* sector was `r round(quarterly_gva$manuf_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Manufacturing sector's `r round(mean(quarterly_gva$manuf_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Secondary sector were `r round(quarterly_gva$secondary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$secondary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Manufacturing", quarterly_gva$manuf_growth, manuf_growth_mean)
+
+graphit2(index = quarterly_gva$manuf_growth, index_mean = manuf_growth_mean, title = "Growth Rate of Output: Manufacturing", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Manufacturing", quarterly_gva$manuf_share, mean(quarterly_gva$manuf_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$manuf_share, index_mean = mean(quarterly_gva$manuf_share, na.rm = TRUE), title = "Share of Output in GVA: Manufacturing", subtitle = mysubtitle)
+
+```
+
+*Comment*: Again, there is a seasonal pattern: the share of *Manufacturing* in overall output seems to hit its lowest in the *third* quarter, which is when agriculture usually hits its highest share.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Manufacturing", quarterly_gva$manuf_share_incr, mean(quarterly_gva$manuf_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$manuf_share_incr, index_mean = mean(quarterly_gva$manuf_share_incr, na.rm = TRUE), title = "Increase in Manufacturing Output as a share of increase in GVA", subtitle = mysubtitle)
+
+```
+
+### Electricity, Gas, Water Supply and other Utility Services
+
+*Importance*: Income generated in the *Electricity_plus* sector was `r round(quarterly_gva$elec_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Electricity_plus sector's `r round(mean(quarterly_gva$elec_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Secondary sector were `r round(quarterly_gva$secondary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$secondary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Utility Services", quarterly_gva$elec_growth, elec_growth_mean)
+
+graphit2(index = quarterly_gva$elec_growth, index_mean = elec_growth_mean, title = "Growth Rate of Output: Utility Services", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Utility Services", quarterly_gva$elec_share, mean(quarterly_gva$elec_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$elec_share, index_mean = mean(quarterly_gva$elec_share, na.rm = TRUE), title = "Share of Output in GVA: Utility Services", subtitle = mysubtitle)
+
+```
+
+*Comment*: *Electricity, Gas, Water Supply and other Utility Services* seems to claim a high share in the first two quarters and slump in quarters three and four. It is tempting to think that agriculture, though well past its halcyon days, still drives the other sectors.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Utility Services", quarterly_gva$elec_share_incr, mean(quarterly_gva$elec_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$elec_share_incr, index_mean = mean(quarterly_gva$elec_share_incr, na.rm = TRUE), title = "Increase in sector's Output as a share of increase in GVA: Utility Services", subtitle = mysubtitle)
+
+```
+
+### Construction
+
+*Importance*: Income generated in the *Construction* sector was `r round(quarterly_gva$construc_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Construction sector's `r round(mean(quarterly_gva$construc_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Secondary sector were `r round(quarterly_gva$secondary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$secondary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Construction", quarterly_gva$construc_growth, construc_growth_mean)
+
+graphit2(index = quarterly_gva$construc_growth, index_mean = construc_growth_mean, title = "Growth Rate of Output: Construction", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Construction", quarterly_gva$construc_share, mean(quarterly_gva$construc_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$construc_share, index_mean = mean(quarterly_gva$construc_share, na.rm = TRUE), title = "Share of Output in GVA: Construction", subtitle = mysubtitle)
+
+```
+
+*Comment*: It seems that a relative decline in *Construction* has been reversed after the pandemic.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Construction", quarterly_gva$construc_share_incr, mean(quarterly_gva$construc_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$construc_share_incr, index_mean = mean(quarterly_gva$construc_share_incr, na.rm = TRUE), title = "Increase in sector's Output as a share of increase in GVA: Construction", subtitle = mysubtitle)
+
+```
+
+## A Closer Look at the Tertiary Sector
+
+### Trade, Hotels, Transport, Communication, and Broadcasting
+
+*Importance*: Income generated in the *Trade_plus* sector was `r round(quarterly_gva$trade_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Trade_plus sector's `r round(mean(quarterly_gva$trade_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Tertiary sector were `r round(quarterly_gva$tertiary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$tertiary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Trade, etc.", quarterly_gva$trade_growth, trade_growth_mean)
+
+graphit2(index = quarterly_gva$trade_growth, index_mean = trade_growth_mean, title = "Growth Rate of Output: Trade, etc.", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Trade, etc.", quarterly_gva$trade_share, mean(quarterly_gva$trade_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$trade_share, index_mean = mean(quarterly_gva$trade_share, na.rm = TRUE), title = "Share of Output in GVA: Trade, etc.", subtitle = mysubtitle)
+
+```
+
+*Comment*: Again, *Trade, Hotels, Transport, Communication, and Broadcasting* seem to hit peak share in the third quarter, in sync with agriculture.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Trade, etc.", quarterly_gva$trade_share_incr, mean(quarterly_gva$trade_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$trade_share_incr, index_mean = mean(quarterly_gva$trade_share_incr, na.rm = TRUE), title = "Increase in sector's Output as a share of increase in GVA: Trade, etc.", subtitle = mysubtitle)
+
+```
+
+### Financial, Real Estate, and Professional Services
+
+*Importance*: Income generated in the *Financial_plus* sector was `r round(quarterly_gva$fin_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Financial_plus sector's `r round(mean(quarterly_gva$fin_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Tertiary sector were `r round(quarterly_gva$tertiary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$tertiary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Financial, etc.", quarterly_gva$fin_growth, fin_growth_mean)
+
+graphit2(index = quarterly_gva$fin_growth, index_mean = fin_growth_mean, title = "Growth Rate of Output: Financial, etc.", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Financial, etc.", quarterly_gva$fin_share, mean(quarterly_gva$fin_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$fin_share, index_mean = mean(quarterly_gva$fin_share, na.rm = TRUE), title = "Share of Output in GVA: Financial, etc.", subtitle = mysubtitle)
+
+```
+
+*Comment*: *Financial, Real Estate, and Professional Services* looks a lot like *Electricity, Gas, Water Supply and other Utility Services*. These two sectors seem to claim high shares in the first two quarters and slump in quarters three and four.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Financial, etc.", quarterly_gva$fin_share_incr, mean(quarterly_gva$fin_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$fin_share_incr, index_mean = mean(quarterly_gva$fin_share_incr, na.rm = TRUE), title = "Increase in sector's Output as a share of increase in GVA: Financial, etc.", subtitle = mysubtitle)
+
+```
+
+### Public Administration, Defence, and Other Services
+
+*Importance*: Income generated in the *Public_Administration_plus* sector was `r round(quarterly_gva$pub_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent of GVA in the latest quarter. This can be compared with the Public_Administration_plus sector's `r round(mean(quarterly_gva$pub_share, na.rm = TRUE),2)` percent share of GVA over the full data period.
+
+Recall that the corresponding shares for the Tertiary sector were `r round(quarterly_gva$tertiary_share[quarterly_gva$Date==max(quarterly_gva$Date)],2)` percent and `r round(mean(quarterly_gva$tertiary_share, na.rm = TRUE),2)` percent, respectively.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) output: Government Services", quarterly_gva$pub_growth, pub_growth_mean)
+
+graphit2(index = quarterly_gva$pub_growth, index_mean = pub_growth_mean, title = "Growth Rate of Output: Government Services", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) output: Government Services", quarterly_gva$pub_share, mean(quarterly_gva$pub_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gva$pub_share, index_mean = mean(quarterly_gva$pub_share, na.rm = TRUE), title = "Share of Output in GVA: Government Services", subtitle = mysubtitle)
+
+```
+
+*Comment*: *Public Administration, Defence, and Other Services* hits peak shares in the second or third quarters. There is a clear seasonal pattern.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) output: Government Services", quarterly_gva$pub_share_incr, mean(quarterly_gva$pub_share_incr, na.rm = TRUE))
+ 
+graphit2(index = quarterly_gva$pub_share_incr, index_mean = mean(quarterly_gva$pub_share_incr, na.rm = TRUE), title = "Increase in sector's Output as a share of increase in GVA: Government Services", subtitle = mysubtitle)
+
+```

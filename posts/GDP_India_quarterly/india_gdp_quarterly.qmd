@@ -1,0 +1,341 @@
+---
+title: "India's Gross Domestic Product and Its Components: Quarterly"
+author: "Udayan Roy"
+date: "2025-05-30"   # `r Sys.Date()`
+format: html
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+quarterly <- read_xlsx(
+  path = "q_2011_12_prices.xlsx",
+  sheet = "Sheet1",
+  col_names = TRUE
+) |>
+  mutate(Date = as.Date(paste0(as.numeric(substr(Year, start = 1, stop = 4)), "-", case_when(Quarter == 1 ~ "01",   # Q1 starts on April 1, but this shortcut serves my purpose.
+                           Quarter == 2 ~ "04",
+                           Quarter == 3 ~ "07",
+                           Quarter == 4 ~ "10"), "-01"))) |>
+  relocate(Date) |>
+  select(c(Date, Year, Quarter, GDP:Discrepancies))
+
+share <- function(x) {
+  100*x/quarterly$GDP
+}
+
+share_incr <- function(x, y){
+  100*(x - lag(x, 4))/(y - lag(y, 4))
+}
+
+growth <- function(x){
+  100*(x - lag(x, 4))/lag(x, 4)
+}
+
+
+
+quarterly_gdp <- quarterly |>
+  mutate(I = GFCF + CIS + Valuables,
+         I_share = share(I),
+         C_share = share(PFCE),
+         G_share = share(GFCE),
+         NX = Exports - Imports,
+         NX_share = share(NX),
+         EX_share = share(Exports),
+         IM_share = share(Imports),
+         D_share = share(Discrepancies),
+         Total = I_share + C_share + G_share + NX_share + D_share,
+         C_share_incr = share_incr(PFCE, GDP),
+         I_share_incr = share_incr(I, GDP),
+         G_share_incr = share_incr(GFCE, GDP),
+         NX_share_incr = share_incr(NX, GDP),  
+         EX_share_incr = share_incr(Exports, GDP),
+         IM_share_incr = share_incr(Imports, GDP),
+         D_share_incr = share_incr(Discrepancies, GDP),
+         Total_share_incr = C_share_incr + I_share_incr + G_share_incr + NX_share_incr + D_share_incr,
+         C_growth = growth(PFCE),
+         G_growth = growth(GFCE),
+         EX_growth = growth(Exports),
+         IM_growth = growth(Imports),
+         I_growth = growth(I),
+         GDP_growth = growth(GDP),
+         NX_growth = sign(NX - lag(NX, 4))*100*
+(((abs(lag(NX, 4)) + abs(NX - lag(NX, 4)))/abs(lag(NX, 4)))-1)
+) 
+
+## Average annual growth over data period
+
+date.begin <- quarterly_gdp$Date[year(quarterly_gdp$Date) == year(min(quarterly_gdp$Date)) & quarter(quarterly_gdp$Date) == quarter(max(quarterly_gdp$Date))]
+date.end <- max(quarterly_gdp$Date)
+
+growth_mean <- function(x){
+  (((x[quarterly_gdp$Date == date.end]/x[quarterly_gdp$Date == date.begin])^(1/(year(date.end) - year(date.begin)))) - 1)*100
+}
+
+GDP_growth_mean <- growth_mean(quarterly_gdp$GDP)
+C_growth_mean <- growth_mean(quarterly_gdp$PFCE)
+I_growth_mean <- growth_mean(quarterly_gdp$I)
+G_growth_mean <- growth_mean(quarterly_gdp$GFCE)
+EX_growth_mean <- growth_mean(quarterly_gdp$Exports)
+IM_growth_mean <- growth_mean(quarterly_gdp$Imports)
+NX_growth_mean <-  sign((quarterly_gdp$NX[quarterly_gdp$Date == date.end] - quarterly_gdp$NX[quarterly_gdp$Date == date.begin]))*
+  (((((abs(quarterly_gdp$NX[quarterly_gdp$Date == date.begin]) +
+  abs(quarterly_gdp$NX[quarterly_gdp$Date == date.end] - quarterly_gdp$NX[quarterly_gdp$Date == date.begin]))/
+  abs(quarterly_gdp$NX[quarterly_gdp$Date == date.begin]))^(1/(year(date.end) - year(date.begin)))) - 1)*100)
+
+
+```
+
+## The Latest Quarter At A Glance
+
+Data on India's Gross Domestic Product for Quarter `r max(quarterly_gdp$Quarter[quarterly_gdp$Year==max(quarterly_gdp$Year)])` of the `r max(quarterly_gdp$Year)` fiscal year has just been published. Here are some highlights:
+
+-   Inflation-adjusted Gross Domestic Product was INR `r format(quarterly_gdp$GDP[quarterly_gdp$Date == max(quarterly_gdp$Date)], scientific = FALSE, nsmall = 2, big.mark=",")` crores at constant 2011-12 prices. (A crore is ten million or 10<sup>7</sup>.)\
+-   This represents a growth of [`r round(quarterly_gdp$GDP_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"} compared to the same quarter in the previous fiscal year. (The available quarterly data spans Quarter `r min(quarterly_gdp$Quarter[quarterly_gdp$Date==min(quarterly_gdp$Date)])` of the `r min(quarterly_gdp$Year)` fiscal year through Quarter `r max(quarterly_gdp$Quarter[quarterly_gdp$Date==max(quarterly_gdp$Date)])` of the `r max(quarterly_gdp$Year)` fiscal year. That's roughly `r  year(max(quarterly_gdp$Date)) - year(min(quarterly_gdp$Date))` years. Over this period, GDP has grown [`r round(GDP_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Consumption spending grew [`r round(quarterly_gdp$C_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, consumption spending has grown [`r round(C_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Investment spending grew [`r round(quarterly_gdp$I_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, investment spending has grown [`r round(I_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Government purchases grew [`r round(quarterly_gdp$G_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, government purchases has grown [`r round(G_growth_mean,2)` percent]{style="color: blue;"} annually.)\
+-   Exports grew [`r round(quarterly_gdp$EX_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, exports has grown [`r round(EX_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Imports grew [`r round(quarterly_gdp$IM_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, imports has grown [`r round(IM_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Net Exports grew [`r round(quarterly_gdp$NX_growth[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent]{style="color: red;"}. (Over the past 13 years, net exports has grown [`r round(NX_growth_mean,2)` percent]{style="color: blue;"} annually.)
+-   Summary: **The latest quarter (January 1, 2025 -- March 31, 2025) was better than usual, with inflation-adjusted GDP growing more than a percentage point faster than its long-run average. This faster growth was propelled by faster growth in investment spending and a sharp fall in imports. Growth of consumption spending was at its long-run rate. Growth of exports was slower than its long-run rate. Government purchases shrank, acting as a brake on the economy.**
+
+## Gross Domestic Product, Level
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+options(scipen = 999)
+library(scales)
+
+graphit <- function(var, title, subtitle){
+  ggplot(data = quarterly_gdp, mapping = aes(x = Date)) +
+  geom_line(mapping = aes(y = var)) +
+  geom_point(mapping = aes(y = var)) +
+  labs (x = NULL, y = NULL, 
+        title = title,
+        subtitle = subtitle,
+        caption = "Each yearly tick mark represents April 1 (which is the first day of the April 1 -- March 31 fiscal year).\nThe data are from the Government of India.") +
+  theme_bw() + 
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_date(labels = date_format("%Y"), date_breaks = "2 years")
+}
+
+graphit(var = quarterly_gdp$GDP, title = "India's GDP", subtitle = "Quarterly GDP is in tens of millions (crores) of constant 2011-12 Rupees.")
+
+```
+
+*Comment*: Just eyeball the pre-pandemic and post-pandemic parts of the chart for a second or two. Note the increased volatility *after* the pandemic, with sharp declines in the first quarter of each year followed by equally sharp increases in the subsequent quarters. I wonder why this is so. Things seem to be returning to the pre-pandemic pattern (of mild increases). However, the question remains: *Why has the first quarter (April -- June) been so far below the pre-pandemic trend after the pandemic? More puzzlingly, why has fourth quarter (January -- March) been so close to the pre-pandemic trend?*
+
+## Gross Domestic Product, Growth Rate
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+subtitle_growth <- function(index_name, index, index_mean){
+	paste("In the latest quarter,", index_name, "grew", round(index[quarterly_gdp$Date==max(quarterly_gdp$Date)],2), "percent. \nThe dashed line shows the average since Quarter", min(quarterly_gdp$Quarter[quarterly_gdp$Date==min(quarterly_gdp$Date)]), "of the",  min(quarterly_gdp$Year), "fiscal year:", round(index_mean,2), "percent.")
+}
+
+subtitle_share <- function(index_name, index, index_mean){
+	paste("In the latest quarter,", index_name, "was", round(index[quarterly_gdp$Date==max(quarterly_gdp$Date)],2), "percent of GDP. \nThe dashed line shows the average since Quarter", min(quarterly_gdp$Quarter[quarterly_gdp$Date==min(quarterly_gdp$Date)]), "of the",  min(quarterly_gdp$Year), "fiscal year:", round(index_mean,2), "percent.")
+}
+
+subtitle_share_incr <- function(index_name, index, index_mean){
+	paste("In the latest quarter, the increase in", index_name, "was\n", round(index[quarterly_gdp$Date==max(quarterly_gdp$Date)],2), "percent of the increase in GDP. \nThe dashed line shows the average since Quarter", min(quarterly_gdp$Quarter[quarterly_gdp$Date==min(quarterly_gdp$Date)]), "of the",  min(quarterly_gdp$Year), "fiscal year:", round(index_mean,2), "percent.")
+}
+
+
+graphit2 <- function(index, title, subtitle, index_mean){
+  ggplot(data = quarterly_gdp, mapping = aes(x = Date)) +
+  geom_line(mapping = aes(y = index)) +
+  geom_point(mapping = aes(y = index))  +
+  geom_hline(aes(yintercept = index_mean), linetype = "dashed") +
+  labs (x = NULL, y = NULL, 
+        title = title,
+        subtitle = subtitle,
+        caption = "Each yearly tick mark represents April 1 (which is the first day of the April 1 -- March 31 fiscal year).\nThe data are from the Government of India.") +
+  theme_bw() + 
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_date(labels = date_format("%Y"), date_breaks = "2 years")
+}
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) GDP", quarterly_gdp$GDP_growth, GDP_growth_mean)
+
+graphit2(index = quarterly_gdp$GDP_growth, index_mean = GDP_growth_mean, title = "Growth Rate of India's GDP", subtitle = mysubtitle)
+
+```
+
+## The Components of GDP (*C*, *I*, *G*, and *NX*)
+
+GDP is the rupee value of all production, roughly speaking. Consequently, GDP is also total income and total spending. Total spending is usually broken down into four *components*:
+
+-   consumption spending (*C*, which is present oriented),
+-   investment spending (*I*, which is future oriented),
+-   government purchases (*G*), and
+-   net exports (*NX* = *Exports* - *Imports*).
+
+Therefore, *GDP* = *C* + *I* + *G* + *NX*. It is important to know which *kind* of spending -- that is, which component of GDP -- contributes how much to GDP and its growth. Policy makers may be able to design better macroeconomic policies if they can spot the component that is causing trouble.
+
+There are a dozen charts below, three for each of the four components.
+
+-   The *first* of the three charts for a particular component shows that component's *growth rate* over the previous year.
+-   The *second* shows that component's share of total spending (that is, its *share of GDP*) during each quarter.
+-   And the *third* shows the increase in that component over the previous year as a share of the increase in total spending over the previous year (that is, *its increase as a share of the increase in GDP*).
+
+Each chart shows the relevant values for each quarter as well as the relevant long-term average from 2011 onwards (shown with a dashed horizontal line).
+
+### Consumption Spending
+
+*Importance*: Consumption spending was `r round(quarterly_gdp$C_share[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent of GDP in the latest quarter (Quarter `r max(quarterly_gdp$Quarter[quarterly_gdp$Year==max(quarterly_gdp$Year)])` of the `r max(quarterly_gdp$Year)` fiscal year). This can be compared with Consumption's `r round(mean(quarterly_gdp$C_share, na.rm = TRUE),2)` percent share of GDP over the full data period (spanning Quarter `r min(quarterly_gdp$Quarter[quarterly_gdp$Date==min(quarterly_gdp$Date)])` of the `r min(quarterly_gdp$Year)` fiscal year through Quarter `r max(quarterly_gdp$Quarter[quarterly_gdp$Date==max(quarterly_gdp$Date)])` of the `r max(quarterly_gdp$Year)` fiscal year).
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) consumption spending", quarterly_gdp$C_growth, C_growth_mean)
+
+graphit2(index = quarterly_gdp$C_growth, index_mean = C_growth_mean, title = "Growth Rate of Consumption Spending", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) consumption spending", quarterly_gdp$C_share, mean(quarterly_gdp$C_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$C_share, index_mean = mean(quarterly_gdp$C_share, na.rm = TRUE), title = "Share of Consumption Spending in GDP", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) consumption spending", quarterly_gdp$C_share_incr, mean(quarterly_gdp$C_share_incr, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$C_share_incr, index_mean = mean(quarterly_gdp$C_share_incr, na.rm = TRUE), title = "Increase in Consumption Spending as a share of increase in GDP", subtitle = mysubtitle)
+
+
+```
+
+### Investment Spending
+
+*Importance*: Investment spending was `r round(quarterly_gdp$I_share[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent of GDP in the latest quarter. This can be compared with Investment's `r round(mean(quarterly_gdp$I_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) investment spending", quarterly_gdp$I_growth, I_growth_mean)
+
+graphit2(index = quarterly_gdp$I_growth, index_mean = I_growth_mean, title = "Growth Rate of Investment Spending", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) investment spending", quarterly_gdp$I_share, mean(quarterly_gdp$I_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$I_share, index_mean = mean(quarterly_gdp$I_share, na.rm = TRUE), title = "Share of Investment Spending in GDP", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) investment spending", quarterly_gdp$I_share_incr, mean(quarterly_gdp$I_share_incr, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$I_share_incr, index_mean = mean(quarterly_gdp$I_share_incr, na.rm = TRUE), title = "Increase in Investment Spending as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+### Government Purchases
+
+*Importance*: Government Purchases was `r round(quarterly_gdp$G_share[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent of GDP in the latest quarter. This can be compared with Government Purchases's `r round(mean(quarterly_gdp$G_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) government spending", quarterly_gdp$G_growth, G_growth_mean)
+
+graphit2(index = quarterly_gdp$G_growth, index_mean = G_growth_mean, title = "Growth Rate of Government Spending", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) government spending", quarterly_gdp$G_share, mean(quarterly_gdp$G_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$G_share, index_mean = mean(quarterly_gdp$G_share, na.rm = TRUE), title = "Share of Government Spending in GDP", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) investment spending", quarterly_gdp$G_share_incr, mean(quarterly_gdp$G_share_incr, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$G_share_incr, index_mean = mean(quarterly_gdp$G_share_incr, na.rm = TRUE), title = "Increase in Government Spending as a share of increase in GDP", subtitle = mysubtitle)
+
+```
+
+### Net Exports
+
+*Importance*: Net Exports was `r round(quarterly_gdp$NX_share[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent of GDP in the latest quarter. This can be compared with Net Exports's `r round(mean(quarterly_gdp$NX_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) net exports", quarterly_gdp$NX_growth, NX_growth_mean)
+
+graphit2(index = quarterly_gdp$NX_growth, index_mean = NX_growth_mean, title = "Growth Rate of Net Exports", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) net exports", quarterly_gdp$NX_share, mean(quarterly_gdp$NX_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$NX_share, index_mean = mean(quarterly_gdp$NX_share, na.rm = TRUE), title = "Share of net exports in GDP", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) net exports", quarterly_gdp$NX_share_incr, mean(quarterly_gdp$NX_share_incr, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$NX_share_incr, index_mean = mean(quarterly_gdp$NX_share_incr, na.rm = TRUE), title = "Increase in Net Exports as a share of increase in GDP", subtitle = mysubtitle)
+
+
+```
+
+#### Exports
+
+*Importance*: Exports was `r round(quarterly_gdp$EX_share[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent of GDP in the latest quarter. This can be compared with Exports's `r round(mean(quarterly_gdp$EX_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) exports", quarterly_gdp$EX_growth, EX_growth_mean)
+
+graphit2(index = quarterly_gdp$EX_growth, index_mean = EX_growth_mean, title = "Growth Rate of Exports", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) exports", quarterly_gdp$EX_share, mean(quarterly_gdp$EX_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$EX_share, index_mean = mean(quarterly_gdp$EX_share, na.rm = TRUE), title = "Share of exports in GDP", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) exports", quarterly_gdp$EX_share_incr, mean(quarterly_gdp$EX_share_incr, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$EX_share_incr, index_mean = mean(quarterly_gdp$EX_share_incr, na.rm = TRUE), title = "Increase in Exports as a share of increase in GDP", subtitle = mysubtitle)
+
+
+```
+
+#### Imports
+
+*Importance*: Imports was `r round(quarterly_gdp$IM_share[quarterly_gdp$Date==max(quarterly_gdp$Date)],2)` percent of GDP in the latest quarter. This can be compared with Imports's `r round(mean(quarterly_gdp$IM_share, na.rm = TRUE),2)` percent share of GDP over the full data period.
+
+```{r}
+#| echo: FALSE
+#| message: FALSE
+#| warning: FALSE
+
+mysubtitle <- subtitle_growth("(inflation-adjusted) imports", quarterly_gdp$IM_growth, IM_growth_mean)
+
+graphit2(index = quarterly_gdp$IM_growth, index_mean = IM_growth_mean, title = "Growth Rate of Imports", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share("(inflation-adjusted) imports", quarterly_gdp$IM_share, mean(quarterly_gdp$IM_share, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$IM_share, index_mean = mean(quarterly_gdp$IM_share, na.rm = TRUE), title = "Share of imports in GDP", subtitle = mysubtitle)
+
+mysubtitle <- subtitle_share_incr("(inflation-adjusted) imports", quarterly_gdp$IM_share_incr, mean(quarterly_gdp$IM_share_incr, na.rm = TRUE))
+
+graphit2(index = quarterly_gdp$IM_share_incr, index_mean = mean(quarterly_gdp$IM_share_incr, na.rm = TRUE), title = "Increase in Imports as a share of increase in GDP", subtitle = mysubtitle)
+
+```
